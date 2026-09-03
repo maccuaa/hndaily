@@ -26,6 +26,7 @@ V1 scope: a reliable daily email with a ranked list of top HN stories (title, li
 - [05 - Bun scheduling approach](issues/05-bun-scheduling-approach.md): **reopened and revised** — a long-running Docker container using `Bun.cron()` in-process scheduling, not a systemd timer + compiled binary, to match the Recipient's existing docker-compose infrastructure (see [ADR 0003](../../docs/adr/0003-docker-container-with-bun-cron.md)).
 - [06 - bun:sqlite storage](issues/06-bun-sqlite-storage.md): `bun:sqlite` is sufficient for Send history/logging — no ORM or external DB; keep the `.sqlite` file outside the git-managed directory.
 - [07 - Oracle server facts](issues/07-oracle-server-facts.md): Ubuntu 24.04 ARM64, single docker-compose.yml, always-on, shared root `.env` with per-service `environment:` references, images built via CI and pulled (not built on server), bind mount for this project's persisted data.
+- [08 - Email delivery mechanism](issues/08-email-delivery-mechanism.md): sends from `hndaily@snowcastle.ca` (new OCI Email Delivery Approved Sender), a new dedicated SMTP credential set, `HNDAILY_`-prefixed env vars in the shared `.env` file.
 
 ## Not yet specified
 

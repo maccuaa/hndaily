@@ -28,6 +28,7 @@ V1 scope: a reliable daily email with a ranked list of top HN stories (title, li
 - [07 - Oracle server facts](issues/07-oracle-server-facts.md): Ubuntu 24.04 ARM64, single docker-compose.yml, always-on, shared root `.env` with per-service `environment:` references, images built via CI and pulled (not built on server), bind mount for this project's persisted data.
 - [08 - Email delivery mechanism](issues/08-email-delivery-mechanism.md): sends from `hndaily@snowcastle.ca` (new OCI Email Delivery Approved Sender), a new dedicated SMTP credential set, `HNDAILY_`-prefixed env vars in the shared `.env` file.
 - [09 - Data storage & dedupe](issues/09-data-storage-dedupe.md): keep Send history indefinitely, full Story metadata (not just IDs), backup rides on the existing bind-mount backup mechanism; two-table schema (`delivery_runs` + `sent_stories`) makes the Catch-up digest's gap check a simple `MAX(started_at)` query.
+- [10 - Scheduling & deployment](issues/10-scheduling-deployment.md): Dockerfile built and pushed to GitHub Container Registry via CI, manual `docker compose pull`/`up -d` deploys, bind mount for storage, `restart: unless-stopped`, config changes require a manual container restart.
 
 ## Not yet specified
 

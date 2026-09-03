@@ -1,5 +1,5 @@
 Type: research
-Status: open
+Status: resolved
 
 ## Question
 
@@ -10,3 +10,9 @@ What does it take to send outbound email FROM an Oracle Cloud (OCI) compute inst
 - Is there a simpler alternative worth weighing for a single-recipient use case — a third-party transactional provider (SES, Mailgun, Resend, Postmark) or even an existing personal email account's SMTP with an app password — that avoids domain-verification overhead entirely?
 
 This directly informs ticket 08 (email delivery mechanism).
+
+## Answer
+
+**Recommended: SMTP with an app password on an existing Gmail/Fastmail account** — no new DNS, domain, account, or IAM setup, ~5 minutes total. **Next best (own-domain option): Resend free tier** (3,000/mo, 2-3 DNS records, one API key). **OCI Email Delivery works and is free at this volume**, but requires the most setup of any option (IAM group/user/policy, email-domain + SPF + DKIM, approved-sender registration, then SMTP-credential generation). Oracle's own docs never state their outbound-port-25 policy either way (unlike AWS/GCP/Azure, which all explicitly document blocking it) — but this turns out not to matter: every viable option here (OCI, SES, Resend, Postmark, Gmail/Fastmail) sends over authenticated port 465/587, never raw port 25.
+
+Full findings, citations, and the alternatives comparison table: [`research/oracle-email-constraints.md`](https://github.com/maccuaa/hndaily/blob/research/oracle-email-constraints/.scratch/hn-digest-service/research/oracle-email-constraints.md) (branch `research/oracle-email-constraints`).

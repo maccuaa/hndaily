@@ -1,0 +1,41 @@
+# hndaily docker-compose service entry
+#
+# This project doesn't manage its own docker-compose.yml — per ticket 07,
+# it's added as a service to the Recipient's existing shared
+# docker-compose.yml, following the same conventions already used there:
+#   - one shared root .env file, each secret referenced explicitly below
+#     via ${VAR} (not env_file:, and the .env file is never mounted)
+#   - a bind mount for data that needs to be persisted and backed up
+#
+# Copy the service block below into the existing docker-compose.yml.
+#
+# One-time setup before first `docker compose up`:
+#   1. Create the bind-mount directory and make it writable by the
+#      container's non-root user (uid/gid 1000, "bun" in the oven/bun
+#      image):
+#        mkdir -p ./data/hndaily
+#        docker run --rm -v "$(pwd)/data/hndaily:/data" --user root \
+#          oven/bun:1 chown -R 1000:1000 /data
+#   2. Copy config.example.json to a real config.json (see ticket 01) and
+#      place it wherever this snippet's config.json mount points to.
+#   3. Add the HNDAILY_* variables (below) to the shared root .env file:
+#        HNDAILY_SMTP_HOST=<from OCI Console > Email Delivery > Configuration>
+#        HNDAILY_SMTP_USERNAME=<generated SMTP credential username>
+#        HNDAILY_SMTP_PASSWORD=<generated SMTP credential password>
+#        HNDAILY_HEARTBEAT_URL=<your healthchecks.io check ping URL>
+#   4. Build and push the image via CI (see .github/workflows/publish.yml),
+#      then `docker compose pull hndaily && docker compose up -d hndaily`.
+
+services:
+  hndaily:
+    image: ghcr.io/maccuaa/hndaily:latest
+    restart: unless-stopped
+    environment:
+      - HNDAILY_SMTP_HOST=${HNDAILY_SMTP_HOST}
+      - HNDAILY_SMTP_USERNAME=${HNDAILY_SMTP_USERNAME}
+      - HNDAILY_SMTP_PASSWORD=${HNDAILY_SMTP_PASSWORD}
+      - HNDAILY_HEARTBEAT_URL=${HNDAILY_HEARTBEAT_URL}
+      - HNDAILY_DB_PATH=/data/hndaily.sqlite
+    volumes:
+      - ./data/hndaily:/data
+      - ./config/hndaily.json:/usr/src/app/config.json:ro

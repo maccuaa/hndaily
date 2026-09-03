@@ -1,0 +1,8 @@
+{
+  "recipientEmail": "you@example.com",
+  "storyCount": 25,
+  "schedule": {
+    "cron": "0 7 * * *",
+    "timezone": "America/Toronto"
+  }
+}

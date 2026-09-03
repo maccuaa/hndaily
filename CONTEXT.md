@@ -1,12 +1,16 @@
 # hndaily
 
-A personal, single-recipient service that fetches Hacker News stories and emails a daily digest, replacing the (unreliable) hosted hndigest.com and hnbrew.com subscriptions.
+A personal, single-recipient service that fetches Hacker News stories and emails a digest on a configurable schedule, replacing the (unreliable) hosted hndigest.com and hnbrew.com subscriptions.
 
 ## Language
 
 **Digest**:
-The single daily email sent to the Recipient, containing that day's curated Stories.
-_Avoid_: Newsletter, update, report
+The email sent to the Recipient on each Delivery run, containing that run's curated Stories.
+_Avoid_: Newsletter, update, report, daily digest (frequency is configurable, not fixed to daily)
+
+**Catch-up digest**:
+A supplementary Digest sent when a Delivery run finds Stories that fell outside the Curation window's lookback before a delayed or missed prior run could send them. Covers the gap since the last successful Delivery run.
+_Avoid_: Backfill, retry email
 
 **Story**:
 An individual Hacker News item eligible for inclusion in a Digest — carries an HN item ID, title, URL, score, and comment count.
@@ -17,7 +21,7 @@ The one email address a Digest is sent to. This is a single-user personal tool: 
 _Avoid_: Subscriber, user, customer
 
 **Curation window**:
-The rule set that decides which Stories qualify for a given day's Digest (e.g. score threshold, lookback period, story count cap, category filters).
+The rule set that decides which Stories qualify for a Digest: a fixed lookback period (independent of Delivery run frequency) plus a configurable story-count cap, always ranked by score.
 _Avoid_: Filter, criteria
 
 **Send history**:
@@ -25,5 +29,5 @@ The record of which Stories have already appeared in a past Digest, checked to a
 _Avoid_: Log, archive
 
 **Delivery run**:
-One execution of the daily scheduled job: fetch candidate Stories, apply the Curation window, render the Digest, send it, update Send history.
+One execution of the scheduled job: fetch candidate Stories, apply the Curation window, render the Digest, send it, update Send history. Frequency is a configurable setting, not fixed to any particular cadence.
 _Avoid_: Job, cron run, build (reserve for the scheduling mechanism itself)

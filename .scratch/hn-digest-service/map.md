@@ -19,6 +19,7 @@ V1 scope: a reliable daily email with a ranked list of top HN stories (title, li
 <!-- one line per closed ticket, gist + link -->
 
 - [01 - Digest content scope](issues/01-digest-content-scope.md): top stories by score, configurable count/frequency/time/timezone via a config file; fixed lookback window + a new Catch-up digest for missed content (see [ADR 0001](../../docs/adr/0001-fixed-curation-window-with-catchup-digest.md)); web archive idea considered and declined for v1.
+- [02 - Project structure](issues/02-project-structure.md): a single Bun package at the repo root, not multiple microservices — the pipeline is one Delivery run per invocation, no concurrent-load/scaling reason to split.
 - [03 - HN data source](issues/03-hn-data-source.md): Algolia HN Search API as primary (server-side score/time filtering in one request), official Firebase API kept as fallback.
 - [04 - Oracle email constraints](issues/04-oracle-email-constraints.md): OCI's outbound port-25 policy is undocumented but moot — recommend Gmail/Fastmail app-password SMTP (least setup) over OCI Email Delivery (most setup: IAM + domain + SPF/DKIM + approved sender).
 - [05 - Bun scheduling approach](issues/05-bun-scheduling-approach.md): systemd timer + service unit (not cron) running a `bun build --compile` standalone ARM64/x64 binary (not a system-wide Bun install).

@@ -1,5 +1,5 @@
 Type: grilling
-Status: claimed
+Status: resolved
 
 ## Question
 
@@ -10,3 +10,7 @@ If a split is wanted, where's the seam (e.g. fetch/curate vs. render/send), and 
 Also covers repo layout: single package at the repo root, or a workspace/monorepo split?
 
 Recommended: a single Bun package/service. A daily cron job has no concurrent-load or independent-scaling reason to split; "microservices" here would add deployment/ops surface (multiple processes, inter-service calls, more places to fail) with no corresponding benefit. Revisit only if a concrete reason to split emerges during implementation.
+
+## Answer
+
+Confirmed: **a single Bun package/service**, living at the repo root (no monorepo/workspace split). The original "microservices" framing was scope-creep the project doesn't need — one Bun package handles fetch → curate → render → send → record end to end, invoked once per Delivery run. No seam was identified that justifies a separate deployable. No new questions surfaced; revisit only if implementation reveals a concrete reason to split (none anticipated).

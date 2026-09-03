@@ -6,6 +6,8 @@ A locked technical/architecture spec for a self-hosted, single-recipient, daily 
 
 V1 scope: a reliable daily email with a ranked list of top HN stories (title, link, points, comment count). Richer curation (AI summaries, personalization) is explicitly deferred — see "Not yet specified".
 
+**Status: destination reached.** All 11 tickets resolved; no open tickets remain. The spec below (Decisions so far + linked tickets/ADRs) is ready to hand off to an implementation session.
+
 ## Notes
 
 - Domain glossary lives in [`CONTEXT.md`](../../CONTEXT.md): Digest, Story, Recipient, Curation window, Send history, Delivery run.
@@ -29,11 +31,12 @@ V1 scope: a reliable daily email with a ranked list of top HN stories (title, li
 - [08 - Email delivery mechanism](issues/08-email-delivery-mechanism.md): sends from `hndaily@snowcastle.ca` (new OCI Email Delivery Approved Sender), a new dedicated SMTP credential set, `HNDAILY_`-prefixed env vars in the shared `.env` file.
 - [09 - Data storage & dedupe](issues/09-data-storage-dedupe.md): keep Send history indefinitely, full Story metadata (not just IDs), backup rides on the existing bind-mount backup mechanism; two-table schema (`delivery_runs` + `sent_stories`) makes the Catch-up digest's gap check a simple `MAX(started_at)` query.
 - [10 - Scheduling & deployment](issues/10-scheduling-deployment.md): Dockerfile built and pushed to GitHub Container Registry via CI, manual `docker compose pull`/`up -d` deploys, bind mount for storage, `restart: unless-stopped`, config changes require a manual container restart.
+- [11 - Failure alerting](issues/11-failure-alerting.md): heartbeat ping to healthchecks.io at the end of each successful Delivery run, on top of Docker's `restart: unless-stopped` — together catch both a crashed container and a silently-stalled schedule.
 
 ## Not yet specified
 
 - Future personalization/filtering beyond the v1 curation rules (topic/keyword weighting, ML-based ranking) — depends on how v1 feels once running; not sharp enough to ticket yet.
-- Long-term backup/resilience if the Oracle VM is lost — low priority for a personal tool; revisit once the deployment ticket (10) lands and there's an actual deployment shape to back up.
+- Long-term backup/resilience if the Oracle VM itself is lost entirely (not just this project's data file, which rides on the existing bind-mount backup per ticket 09) — low priority for a personal tool, and a whole-server disaster-recovery question that sits beyond this project's own destination.
 
 ## Out of scope
 

@@ -1,5 +1,5 @@
 Type: grilling
-Status: claimed
+Status: resolved
 
 ## Question
 
@@ -10,4 +10,10 @@ Status: claimed
 - Accepting manual log-checking for a v1 personal tool.
 
 Recommended: still the heartbeat-ping service — it's the one option that catches both "container crashed" and "container's alive but the scheduled Delivery run didn't actually fire," and costs nothing extra to keep from the original recommendation.
+
+## Answer
+
+Confirmed: a **heartbeat ping to healthchecks.io** at the end of each successful Delivery run (including Catch-up digests, ticket 01), on top of the `restart: unless-stopped` policy already decided in ticket 10. Together these catch both failure modes — a crashed/restarted container (Docker's own recovery) and a container that's alive but whose internal `Bun.cron()` schedule silently stopped firing (the heartbeat ping, which only healthchecks.io's missed-check alerting would catch).
+
+Ticket 11 is now fully resolved — the last open ticket on this map. No new questions surfaced.
 

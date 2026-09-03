@@ -11,6 +11,7 @@ V1 scope: a reliable daily email with a ranked list of top HN stories (title, li
 - Domain glossary lives in [`CONTEXT.md`](../../CONTEXT.md): Digest, Story, Recipient, Curation window, Send history, Delivery run.
 - Standing preference: simplicity first. Assume a single Bun service/package unless a concrete reason to split emerges — see ticket 02, which challenges the original "microservices" framing.
 - Runtime: Bun, deployed to the user's existing Oracle Cloud server (not a new managed platform).
+- Deployment model: a long-running **Docker container** managed via the Recipient's existing **docker-compose** setup (confirmed via ticket 05's reopening) — not a bare-host systemd timer or cron job. Every other service on the box already runs this way.
 - Every grilling ticket: call the Skill tool for "grilling" and "domain-modeling".
 - Tracker: local markdown (this effort opted out of GitHub Issues even though the repo itself — https://github.com/maccuaa/hndaily — is on GitHub).
 
@@ -22,7 +23,7 @@ V1 scope: a reliable daily email with a ranked list of top HN stories (title, li
 - [02 - Project structure](issues/02-project-structure.md): a single Bun package at the repo root, not multiple microservices — the pipeline is one Delivery run per invocation, no concurrent-load/scaling reason to split.
 - [03 - HN data source](issues/03-hn-data-source.md): Algolia HN Search API as primary (server-side score/time filtering in one request), official Firebase API kept as fallback.
 - [04 - Oracle email constraints](issues/04-oracle-email-constraints.md): **reopened and revised** — use OCI Email Delivery (already configured for other projects, so the original setup-cost objection doesn't apply here); just needs a new Approved Sender + SMTP credentials (see [ADR 0002](../../docs/adr/0002-use-oci-email-delivery.md)).
-- [05 - Bun scheduling approach](issues/05-bun-scheduling-approach.md): systemd timer + service unit (not cron) running a `bun build --compile` standalone ARM64/x64 binary (not a system-wide Bun install).
+- [05 - Bun scheduling approach](issues/05-bun-scheduling-approach.md): **reopened and revised** — a long-running Docker container using `Bun.cron()` in-process scheduling, not a systemd timer + compiled binary, to match the Recipient's existing docker-compose infrastructure (see [ADR 0003](../../docs/adr/0003-docker-container-with-bun-cron.md)).
 - [06 - bun:sqlite storage](issues/06-bun-sqlite-storage.md): `bun:sqlite` is sufficient for Send history/logging — no ORM or external DB; keep the `.sqlite` file outside the git-managed directory.
 
 ## Not yet specified

@@ -4,6 +4,11 @@ Blocked by: 10
 
 ## Question
 
-How should you find out if a Delivery run fails to execute or fails to send? Silent failure is the main risk of a single daily cron job with no UI. Options include: a dead-man's-switch / heartbeat ping (e.g. healthchecks.io), systemd's `OnFailure=` unit sending a separate alert, or just accepting manual log-checking for a v1 personal tool.
+**Updated after ticket 05:** since the deployment model is now a long-running Docker container (not a systemd-triggered one-shot process), the systemd `OnFailure=` option no longer applies. How should you find out if a Delivery run fails to execute or fails to send? Silent failure is the main risk either way. Remaining options:
 
-Recommended: a free heartbeat-ping service (healthchecks.io or similar), pinged at the end of a successful Delivery run — cheap, simple, and catches "cron didn't fire" as well as "job crashed," which log-checking alone would miss.
+- A dead-man's-switch / heartbeat ping (e.g. healthchecks.io) at the end of each successful Delivery run — deployment-model-agnostic, still works identically inside a long-running container's `Bun.cron()` handler.
+- Docker/docker-compose's own primitives: a `healthcheck:` directive plus `restart: unless-stopped` for crash recovery, or just watching `docker compose logs`/`docker events` — catches the container crashing, but not "the container's internal Bun.cron() schedule silently stopped firing while the process itself looks healthy," which the heartbeat ping catches and this doesn't.
+- Accepting manual log-checking for a v1 personal tool.
+
+Recommended: still the heartbeat-ping service — it's the one option that catches both "container crashed" and "container's alive but the scheduled Delivery run didn't actually fire," and costs nothing extra to keep from the original recommendation.
+

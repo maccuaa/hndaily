@@ -174,6 +174,22 @@ async function expectCode(link: SmtpLink, ...codes: number[]): Promise<string> {
 	return message;
 }
 
+/**
+ * Rejects CRLF in any value that gets concatenated directly into an SMTP
+ * command line or header (envelope addresses) rather than being encoded
+ * first. Without this, an embedded "\r\n" could inject arbitrary SMTP
+ * commands — the exact class of bug fixed upstream in nodemailer
+ * (GHSA-c7w3-x93f-qmm8, unsanitized envelope fields allowing injected
+ * RCPT TO commands).
+ */
+function assertNoCrlf(value: string, fieldName: string): void {
+	if (/[\r\n]/.test(value)) {
+		throw new Error(
+			`SMTP ${fieldName} must not contain CR/LF characters: ${JSON.stringify(value)}`,
+		);
+	}
+}
+
 /** RFC 2047 encoded-word — only engaged when the subject actually needs it (has non-ASCII/control chars). */
 function encodeSubject(subject: string): string {
 	const isPlainAscii = /^[\x20-\x7e]*$/.test(subject);
@@ -195,6 +211,11 @@ export async function sendMail(
 	message: SmtpMessage,
 	deps: SmtpDeps = defaultDeps,
 ): Promise<void> {
+	// Validate untrusted-shaped fields before opening a connection at all.
+	assertNoCrlf(message.from, "from address");
+	assertNoCrlf(message.to, "to address");
+	assertNoCrlf(message.subject, "subject");
+
 	const socket = config.secure
 		? await deps.connectTls(config.host, config.port)
 		: await deps.connectPlain(config.host, config.port);

@@ -168,6 +168,50 @@ describe("sendMail — error handling", () => {
 	});
 });
 
+describe("sendMail — SMTP command injection guard", () => {
+	// Mirrors the class of bug fixed upstream in nodemailer (GHSA-c7w3-x93f-qmm8):
+	// an unsanitized envelope field with embedded CRLF could inject extra SMTP
+	// commands (e.g. a smuggled RCPT TO adding an attacker-controlled recipient).
+	test("rejects a `to` address containing embedded CRLF before connecting at all", async () => {
+		const socket = new FakeSmtpSocket(HAPPY_PATH_RESPONSES);
+
+		await expect(
+			sendMail(
+				{ ...BASE_CONFIG, port: 465, secure: true },
+				{ ...MESSAGE, to: "victim@example.com>\r\nRCPT TO:<attacker@evil.com" },
+				depsFor(socket),
+			),
+		).rejects.toThrow(/CR\/LF/);
+		expect(socket.written).toEqual([]);
+	});
+
+	test("rejects a `from` address containing embedded CRLF", async () => {
+		const socket = new FakeSmtpSocket(HAPPY_PATH_RESPONSES);
+
+		await expect(
+			sendMail(
+				{ ...BASE_CONFIG, port: 465, secure: true },
+				{ ...MESSAGE, from: "hndaily@snowcastle.ca\r\nRCPT TO:<attacker@evil.com>" },
+				depsFor(socket),
+			),
+		).rejects.toThrow(/CR\/LF/);
+		expect(socket.written).toEqual([]);
+	});
+
+	test("rejects a subject containing embedded CRLF", async () => {
+		const socket = new FakeSmtpSocket(HAPPY_PATH_RESPONSES);
+
+		await expect(
+			sendMail(
+				{ ...BASE_CONFIG, port: 465, secure: true },
+				{ ...MESSAGE, subject: "Digest\r\nBcc: attacker@evil.com" },
+				depsFor(socket),
+			),
+		).rejects.toThrow(/CR\/LF/);
+		expect(socket.written).toEqual([]);
+	});
+});
+
 describe("sendMail — message encoding", () => {
 	test("leaves a plain-ASCII subject untouched", async () => {
 		const socket = new FakeSmtpSocket(HAPPY_PATH_RESPONSES);

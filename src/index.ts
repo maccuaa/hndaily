@@ -9,6 +9,16 @@ import { loadNtfyTopicFromEnv } from "./ntfy";
 const CONFIG_PATH = process.env.HNDAILY_CONFIG_PATH ?? "config.json";
 const DB_PATH = process.env.HNDAILY_DB_PATH ?? "data/hndaily.sqlite";
 
+// --run-once: triggers one real Delivery run immediately, then exits.
+// --dry-run: same, but a Dry run (see CONTEXT.md) — skips Send history.
+// Both let you verify delivery (e.g. an SMTP fix) without waiting for cron.
+const args = process.argv.slice(2);
+const runOnce = args.includes("--run-once");
+const dryRun = args.includes("--dry-run");
+if (runOnce && dryRun) {
+	throw new Error("--run-once and --dry-run are mutually exclusive");
+}
+
 const config = await loadConfig(CONFIG_PATH);
 const mailerConfig = loadMailerConfigFromEnv();
 const heartbeatUrl = loadHeartbeatUrlFromEnv();
@@ -23,7 +33,13 @@ logger.info("hndaily starting", {
 	recipientEmail: config.recipientEmail,
 	heartbeatEnabled: heartbeatUrl !== null,
 	ntfyEnabled: ntfyTopic !== null,
+	mode: runOnce ? "run-once" : dryRun ? "dry-run" : "scheduled",
 });
+
+if (runOnce || dryRun) {
+	await runDeliveryRun({ db, config, mailerConfig, heartbeatUrl, ntfyTopic, dryRun });
+	process.exit(0);
+}
 
 // Long-running Docker container using Bun.cron()'s in-process scheduling
 // (ticket 05/10) — config is read once at startup; changing it requires a

@@ -29,8 +29,12 @@ The record of which Stories have already appeared in a past Digest, checked to a
 _Avoid_: Log, archive
 
 **Delivery run**:
-One execution of the scheduled job: fetch candidate Stories, apply the Curation window, render the Digest, send it, update Send history. Frequency is a configurable setting, not fixed to any particular cadence.
+One execution of the pipeline: fetch candidate Stories, apply the Curation window, render the Digest, send it, update Send history. Normally fired by the schedule, but can also be triggered manually (`--run-once`) for an immediate real send. Frequency is a configurable setting, not fixed to any particular cadence.
 _Avoid_: Job, cron run, build (reserve for the scheduling mechanism itself)
+
+**Dry run**:
+A manually-triggered run (`--dry-run`) through the full pipeline — curate, render, send, notify — used to verify delivery mechanics without waiting for the schedule. Still sends a real Digest and real Notifications; the only difference from a Delivery run is that it never updates Send history, so it has no effect on which Stories count as already sent.
+_Avoid_: Test run, preview (both imply no real send happens — it does)
 
 **Theme**:
 The Digest's visual identity — header/logo, story-row layout, and footer (`src/themes/`), selected by the `theme` config setting. Two ship today: `night-wire` (default, quiet/dark) and `front-page` (bold, HN-style masthead with ranked stories). Purely presentational — never changes which Stories are selected or the Curation window.

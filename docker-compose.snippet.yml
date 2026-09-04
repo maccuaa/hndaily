@@ -22,6 +22,7 @@
 #        HNDAILY_SMTP_HOST=<from OCI Console > Email Delivery > Configuration>
 #        HNDAILY_SMTP_USERNAME=<generated SMTP credential username>
 #        HNDAILY_SMTP_PASSWORD=<generated SMTP credential password>
+#        HNDAILY_FROM_ADDRESS=<your OCI Email Delivery Approved Sender address>
 #        HNDAILY_HEARTBEAT_URL=<your healthchecks.io check ping URL>
 #   4. Build and push the image via CI (see .github/workflows/ci.yml),
 #      then `docker compose pull hndaily && docker compose up -d hndaily`.
@@ -34,6 +35,7 @@ services:
       - HNDAILY_SMTP_HOST=${HNDAILY_SMTP_HOST}
       - HNDAILY_SMTP_USERNAME=${HNDAILY_SMTP_USERNAME}
       - HNDAILY_SMTP_PASSWORD=${HNDAILY_SMTP_PASSWORD}
+      - HNDAILY_FROM_ADDRESS=${HNDAILY_FROM_ADDRESS}
       - HNDAILY_HEARTBEAT_URL=${HNDAILY_HEARTBEAT_URL}
       - HNDAILY_DB_PATH=/data/hndaily.sqlite
     volumes:

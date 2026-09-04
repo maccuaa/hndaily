@@ -51,7 +51,7 @@ class FakeSmtpSocket extends EventEmitter {
 
 const BASE_CONFIG = { host: "smtp.example.com", username: "user", password: "pass" };
 const MESSAGE = {
-	from: "hndaily@snowcastle.ca",
+	from: "hndaily@example.com",
 	to: "you@example.com",
 	subject: "Digest",
 	html: "<p>hi</p>",
@@ -91,7 +91,7 @@ describe("sendMail — implicit TLS (port 465)", () => {
 		expect(socket.written[1]).toBe("AUTH LOGIN\r\n");
 		expect(socket.written[2]).toBe(`${Buffer.from("user").toString("base64")}\r\n`);
 		expect(socket.written[3]).toBe(`${Buffer.from("pass").toString("base64")}\r\n`);
-		expect(socket.written[4]).toBe("MAIL FROM:<hndaily@snowcastle.ca>\r\n");
+		expect(socket.written[4]).toBe("MAIL FROM:<hndaily@example.com>\r\n");
 		expect(socket.written[5]).toBe("RCPT TO:<you@example.com>\r\n");
 		expect(socket.written[6]).toBe("DATA\r\n");
 		expect(socket.written[7]).toContain("Subject: Digest");
@@ -191,7 +191,7 @@ describe("sendMail — SMTP command injection guard", () => {
 		await expect(
 			sendMail(
 				{ ...BASE_CONFIG, port: 465, secure: true },
-				{ ...MESSAGE, from: "hndaily@snowcastle.ca\r\nRCPT TO:<attacker@evil.com>" },
+				{ ...MESSAGE, from: "hndaily@example.com\r\nRCPT TO:<attacker@evil.com>" },
 				depsFor(socket),
 			),
 		).rejects.toThrow(/CR\/LF/);

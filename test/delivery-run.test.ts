@@ -21,7 +21,7 @@ function mailerConfig(): MailerConfig {
 		port: 465,
 		username: "u",
 		password: "p",
-		from: "hndaily@snowcastle.ca",
+		from: "hndaily@example.com",
 	};
 }
 

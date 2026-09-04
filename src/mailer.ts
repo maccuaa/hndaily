@@ -22,7 +22,7 @@ export function loadMailerConfigFromEnv(): MailerConfig {
 		port: Number(process.env.HNDAILY_SMTP_PORT ?? "465"),
 		username: requireEnv("HNDAILY_SMTP_USERNAME"),
 		password: requireEnv("HNDAILY_SMTP_PASSWORD"),
-		from: process.env.HNDAILY_FROM_ADDRESS ?? "hndaily@snowcastle.ca",
+		from: requireEnv("HNDAILY_FROM_ADDRESS"),
 	};
 }
 

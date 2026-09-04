@@ -22,12 +22,12 @@ afterEach(() => {
 });
 
 describe("loadMailerConfigFromEnv", () => {
-	test("reads all values from env, defaulting port and from-address", () => {
+	test("reads all values from env, defaulting port", () => {
 		process.env.HNDAILY_SMTP_HOST = "smtp.example.com";
 		delete process.env.HNDAILY_SMTP_PORT;
 		process.env.HNDAILY_SMTP_USERNAME = "user";
 		process.env.HNDAILY_SMTP_PASSWORD = "pass";
-		delete process.env.HNDAILY_FROM_ADDRESS;
+		process.env.HNDAILY_FROM_ADDRESS = "hndaily@example.com";
 
 		const config = loadMailerConfigFromEnv();
 
@@ -36,7 +36,7 @@ describe("loadMailerConfigFromEnv", () => {
 			port: 465,
 			username: "user",
 			password: "pass",
-			from: "hndaily@snowcastle.ca",
+			from: "hndaily@example.com",
 		});
 	});
 
@@ -60,6 +60,15 @@ describe("loadMailerConfigFromEnv", () => {
 
 		expect(() => loadMailerConfigFromEnv()).toThrow(/HNDAILY_SMTP_HOST/);
 	});
+
+	test("throws when HNDAILY_FROM_ADDRESS is missing", () => {
+		process.env.HNDAILY_SMTP_HOST = "smtp.example.com";
+		process.env.HNDAILY_SMTP_USERNAME = "user";
+		process.env.HNDAILY_SMTP_PASSWORD = "pass";
+		delete process.env.HNDAILY_FROM_ADDRESS;
+
+		expect(() => loadMailerConfigFromEnv()).toThrow(/HNDAILY_FROM_ADDRESS/);
+	});
 });
 
 describe("sendDigestEmail", () => {
@@ -77,7 +86,7 @@ describe("sendDigestEmail", () => {
 				port: 465,
 				username: "u",
 				password: "p",
-				from: "hndaily@snowcastle.ca",
+				from: "hndaily@example.com",
 			},
 			"you@example.com",
 			{ subject: "Test subject", html: "<p>hi</p>" },
@@ -92,7 +101,7 @@ describe("sendDigestEmail", () => {
 			password: "p",
 		});
 		expect(sentMessage).toEqual({
-			from: "hndaily@snowcastle.ca",
+			from: "hndaily@example.com",
 			to: "you@example.com",
 			subject: "Test subject",
 			html: "<p>hi</p>",
@@ -111,7 +120,7 @@ describe("sendDigestEmail", () => {
 				port: 587,
 				username: "u",
 				password: "p",
-				from: "hndaily@snowcastle.ca",
+				from: "hndaily@example.com",
 			},
 			"you@example.com",
 			{ subject: "s", html: "h" },

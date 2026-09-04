@@ -2,7 +2,7 @@
 
 Self-hosted Hacker News digest emailer — a personal replacement for [HN Digest](https://hndigest.com/) and [hnbrew](https://hnbrew.com/), self-hosted on Oracle Cloud.
 
-Fetches top HN stories (title, link, points, comment count) and emails a Digest on a configurable schedule. See [`CONTEXT.md`](CONTEXT.md) for the domain glossary and [`docs/adr/`](docs/adr/) for the architecture decisions. Planning history is in [`.scratch/`](.scratch/).
+Fetches top HN stories (title, link, points, comment count) and emails a Digest on a configurable schedule. See [`CONTEXT.md`](CONTEXT.md) for the domain glossary and [`docs/adr/`](docs/adr/) for the architecture decisions.
 
 ## How it works
 

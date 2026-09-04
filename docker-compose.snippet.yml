@@ -24,6 +24,7 @@
 #        HNDAILY_SMTP_PASSWORD=<generated SMTP credential password>
 #        HNDAILY_FROM_ADDRESS=<your OCI Email Delivery Approved Sender address>
 #        HNDAILY_HEARTBEAT_URL=<your healthchecks.io check ping URL>
+#        HNDAILY_NTFY_TOPIC=<your ntfy.sh topic name, optional>
 #   4. Build and push the image via CI (see .github/workflows/ci.yml),
 #      then `docker compose pull hndaily && docker compose up -d hndaily`.
 
@@ -37,6 +38,7 @@ services:
       - HNDAILY_SMTP_PASSWORD=${HNDAILY_SMTP_PASSWORD}
       - HNDAILY_FROM_ADDRESS=${HNDAILY_FROM_ADDRESS}
       - HNDAILY_HEARTBEAT_URL=${HNDAILY_HEARTBEAT_URL}
+      - HNDAILY_NTFY_TOPIC=${HNDAILY_NTFY_TOPIC}
       - HNDAILY_DB_PATH=/data/hndaily.sqlite
     volumes:
       - ./data/hndaily:/data

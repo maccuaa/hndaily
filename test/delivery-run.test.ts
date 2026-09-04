@@ -50,6 +50,7 @@ describe("runDeliveryRun", () => {
 				config: config(),
 				mailerConfig: mailerConfig(),
 				heartbeatUrl: "https://hc-ping.com/abc",
+				ntfyTopic: null,
 			},
 			{
 				curateFn: async () => ({ stories, isCatchup: false, windowStart: 0 }),
@@ -73,7 +74,7 @@ describe("runDeliveryRun", () => {
 		let heartbeatCalled = false;
 
 		await runDeliveryRun(
-			{ db, config: config(), mailerConfig: mailerConfig(), heartbeatUrl: null },
+			{ db, config: config(), mailerConfig: mailerConfig(), heartbeatUrl: null, ntfyTopic: null },
 			{
 				curateFn: async () => ({ stories: [], isCatchup: false, windowStart: 0 }),
 				renderFn: () => ({ subject: "s", html: "h" }),
@@ -98,6 +99,7 @@ describe("runDeliveryRun", () => {
 					config: config(),
 					mailerConfig: mailerConfig(),
 					heartbeatUrl: "https://hc-ping.com/abc",
+					ntfyTopic: null,
 				},
 				{
 					curateFn: async () => ({ stories: [story()], isCatchup: false, windowStart: 0 }),
@@ -114,5 +116,94 @@ describe("runDeliveryRun", () => {
 
 		expect(heartbeatCalled).toBe(false);
 		expect(getAllSentStoryIds(db)).toEqual(new Set());
+	});
+
+	test("on success with a configured ntfy topic: sends a success notification", async () => {
+		const db = openDb(":memory:");
+		let notifiedTopic: string | undefined;
+		let notifiedTitle: string | undefined;
+		let notifiedMessage: string | undefined;
+
+		await runDeliveryRun(
+			{
+				db,
+				config: config(),
+				mailerConfig: mailerConfig(),
+				heartbeatUrl: null,
+				ntfyTopic: "my-topic",
+			},
+			{
+				curateFn: async () => ({
+					stories: [story({ hnId: 1 }), story({ hnId: 2 })],
+					isCatchup: false,
+					windowStart: 0,
+				}),
+				renderFn: () => ({ subject: "s", html: "h" }),
+				sendMailFn: async () => {},
+				sendNtfyFn: async (topic, notification) => {
+					notifiedTopic = topic;
+					notifiedTitle = notification.title;
+					notifiedMessage = notification.message;
+				},
+			},
+		);
+
+		expect(notifiedTopic).toBe("my-topic");
+		expect(notifiedTitle).toBe("hndaily");
+		expect(notifiedMessage).toBe("Sent 2 stories");
+	});
+
+	test("on success without a configured ntfy topic: does not attempt to notify", async () => {
+		const db = openDb(":memory:");
+		let notified = false;
+
+		await runDeliveryRun(
+			{ db, config: config(), mailerConfig: mailerConfig(), heartbeatUrl: null, ntfyTopic: null },
+			{
+				curateFn: async () => ({ stories: [], isCatchup: false, windowStart: 0 }),
+				renderFn: () => ({ subject: "s", html: "h" }),
+				sendMailFn: async () => {},
+				sendNtfyFn: async () => {
+					notified = true;
+				},
+			},
+		);
+
+		expect(notified).toBe(false);
+	});
+
+	test("on failure with a configured ntfy topic: sends a high-priority failure notification", async () => {
+		const db = openDb(":memory:");
+		let notifiedTitle: string | undefined;
+		let notifiedMessage: string | undefined;
+		let notifiedPriority: string | undefined;
+
+		await expect(
+			runDeliveryRun(
+				{
+					db,
+					config: config(),
+					mailerConfig: mailerConfig(),
+					heartbeatUrl: null,
+					ntfyTopic: "my-topic",
+				},
+				{
+					curateFn: async () => ({ stories: [story()], isCatchup: false, windowStart: 0 }),
+					renderFn: () => ({ subject: "s", html: "h" }),
+					sendMailFn: async () => {
+						throw new Error("SMTP connection refused");
+					},
+					sendNtfyFn: async (_topic, notification) => {
+						notifiedTitle = notification.title;
+						notifiedMessage = notification.message;
+						notifiedPriority = notification.priority;
+					},
+				},
+			),
+		).rejects.toThrow("SMTP connection refused");
+
+		expect(notifiedTitle).toBe("hndaily failed");
+		expect(notifiedMessage).toBe("SMTP connection refused");
+		expect(notifiedPriority).toBe("high");
 	});
 });

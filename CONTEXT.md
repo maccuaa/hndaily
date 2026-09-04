@@ -35,3 +35,11 @@ _Avoid_: Job, cron run, build (reserve for the scheduling mechanism itself)
 **Theme**:
 The Digest's visual identity — header/logo, story-row layout, and footer (`src/themes/`), selected by the `theme` config setting. Two ship today: `night-wire` (default, quiet/dark) and `front-page` (bold, HN-style masthead with ranked stories). Purely presentational — never changes which Stories are selected or the Curation window.
 _Avoid_: Template, skin (this codebase's term is "Theme")
+
+**Heartbeat**:
+A liveness-only ping to healthchecks.io at the end of a successful Delivery run — no content, alerts only when pings *stop* arriving (a dead man's switch), not on any specific outcome.
+_Avoid_: Notification, alert (those carry content — see Notification)
+
+**Notification**:
+A content-bearing message sent via ntfy reporting a specific Delivery run's outcome — success or failure — as it happens. A short-term addition alongside the Heartbeat, until the Heartbeat alone proves reliable.
+_Avoid_: Heartbeat (that's liveness-only, with no content)

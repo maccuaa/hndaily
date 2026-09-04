@@ -23,7 +23,7 @@
 #        HNDAILY_SMTP_USERNAME=<generated SMTP credential username>
 #        HNDAILY_SMTP_PASSWORD=<generated SMTP credential password>
 #        HNDAILY_HEARTBEAT_URL=<your healthchecks.io check ping URL>
-#   4. Build and push the image via CI (see .github/workflows/publish.yml),
+#   4. Build and push the image via CI (see .github/workflows/ci.yml),
 #      then `docker compose pull hndaily && docker compose up -d hndaily`.
 
 services:

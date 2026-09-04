@@ -1,6 +1,8 @@
 import { connect as netConnect, type Socket } from "node:net";
 import { connect as tlsConnect, type TLSSocket } from "node:tls";
 
+import { logger } from "./logger";
+
 /**
  * A minimal SMTP client covering exactly what hndaily needs to deliver the
  * Digest through OCI Email Delivery (ADR 0002): one recipient, an HTML-only
@@ -225,7 +227,11 @@ export async function sendMail(
 		await expectCode(link, 220);
 
 		link.writeCommand(`EHLO ${EHLO_IDENTITY}`);
-		await expectCode(link, 250);
+		const capabilities = await expectCode(link, 250);
+		// Logged so a local test run (--dry-run/--run-once) can show exactly
+		// which AUTH mechanisms the server advertises — the fact needed to
+		// diagnose an "SMTP error 504: ... authentication mechanism ..." failure.
+		logger.info("SMTP EHLO capabilities", { host: config.host, phase: "initial", capabilities });
 
 		if (!config.secure) {
 			link.writeCommand("STARTTLS");
@@ -234,7 +240,12 @@ export async function sendMail(
 			link.rebind(tlsSocket);
 
 			link.writeCommand(`EHLO ${EHLO_IDENTITY}`);
-			await expectCode(link, 250);
+			const tlsCapabilities = await expectCode(link, 250);
+			logger.info("SMTP EHLO capabilities", {
+				host: config.host,
+				phase: "post-starttls",
+				capabilities: tlsCapabilities,
+			});
 		}
 
 		link.writeCommand("AUTH LOGIN");

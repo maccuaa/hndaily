@@ -24,13 +24,22 @@ Copy [`config.example.json`](config.example.json) to `config.json` and edit:
 {
   "recipientEmail": "you@example.com",
   "storyCount": 25,
-  "schedule": { "cron": "0 7 * * *", "timezone": "America/Toronto" }
+  "schedule": { "cron": "0 7 * * *", "timezone": "America/Toronto" },
+  "theme": "night-wire"
 }
 ```
 
 - `storyCount` — how many Stories per Digest.
 - `schedule.cron` — a standard 5-field cron expression; covers both frequency and time-of-day (e.g. `0 7 * * *` = daily at 7am, `0 7 * * 1` = weekly on Mondays).
 - `schedule.timezone` — an IANA timezone name.
+- `theme` — which visual identity renders the Digest's HTML. One of:
+  - `"night-wire"` (default) — dark, monospace-flavored header on an otherwise plain white Digest.
+  - `"front-page"` — a bold Hacker News-style masthead with stories numbered by rank.
+
+  Omit it to get `"night-wire"`. Adding a new theme means implementing the
+  `Theme` interface in a new file under [`src/themes/`](src/themes/) and
+  registering it in [`src/themes/index.ts`](src/themes/index.ts) — nothing
+  else needs to change.
 
 Changing this file requires restarting the process/container to take effect (it's read once at startup).
 

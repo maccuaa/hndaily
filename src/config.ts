@@ -1,8 +1,11 @@
+import { DEFAULT_THEME_ID, THEME_IDS } from "./themes";
+
 /**
  * Loads and validates the Recipient's config file (ticket 01): story count,
  * schedule (a standard cron expression covers frequency + time-of-day
- * together), and IANA timezone. Read once at container startup (ticket 10);
- * changing a value requires restarting the container to take effect.
+ * together), IANA timezone, and which Theme (src/themes/) renders the
+ * Digest's HTML. Read once at container startup (ticket 10); changing a
+ * value requires restarting the container to take effect.
  */
 export interface Config {
   recipientEmail: string;
@@ -11,6 +14,8 @@ export interface Config {
     cron: string;
     timezone: string;
   };
+  /** One of THEME_IDS (src/themes/) — defaults to DEFAULT_THEME_ID ("night-wire") when omitted. */
+  theme: string;
 }
 
 export async function loadConfig(path: string): Promise<Config> {
@@ -67,9 +72,17 @@ export function validateConfig(raw: unknown, path: string): Config {
     throw new Error(`Config at "${path}": "schedule.cron" does not match any upcoming time`);
   }
 
+  // Omitted "theme" defaults to Night Wire so configs written before the
+  // theme setting existed keep working unchanged.
+  const theme = obj.theme === undefined ? DEFAULT_THEME_ID : obj.theme;
+  if (typeof theme !== "string" || !THEME_IDS.includes(theme)) {
+    throw new Error(`Config at "${path}": "theme" must be one of: ${THEME_IDS.join(", ")}`);
+  }
+
   return {
     recipientEmail: obj.recipientEmail,
     storyCount: obj.storyCount,
     schedule: { cron: schedule.cron, timezone: schedule.timezone },
+    theme,
   };
 }

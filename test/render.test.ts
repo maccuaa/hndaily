@@ -69,4 +69,25 @@ describe("renderDigest", () => {
     const { html } = renderDigest([], { isCatchup: false });
     expect(html).toContain("No new stories");
   });
+
+  test("defaults to the Night Wire theme when options.theme is omitted", () => {
+    const { html } = renderDigest([story()], { isCatchup: false });
+    expect(html).toContain("hndaily");
+  });
+
+  test("renders with the Front Page theme when options.theme is set", () => {
+    const { html } = renderDigest([story()], { isCatchup: false, theme: "front-page" });
+    expect(html).toContain("HN DAILY");
+  });
+
+  test("throws a descriptive error for an unknown theme", () => {
+    expect(() => renderDigest([story()], { isCatchup: false, theme: "not-a-real-theme" })).toThrow(
+      /Unknown theme "not-a-real-theme"/,
+    );
+  });
+
+  test("keeps the subject line theme-agnostic", () => {
+    const { subject } = renderDigest([story()], { isCatchup: false, theme: "front-page" });
+    expect(subject).toMatch(/^HN Daily — /);
+  });
 });

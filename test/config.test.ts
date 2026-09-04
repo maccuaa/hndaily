@@ -8,9 +8,9 @@ const valid = {
 };
 
 describe("validateConfig", () => {
-  test("accepts a valid config", () => {
+  test("accepts a valid config, defaulting theme to night-wire when omitted", () => {
     const config = validateConfig(valid, "test.json");
-    expect(config).toEqual(valid);
+    expect(config).toEqual({ ...valid, theme: "night-wire" });
   });
 
   test("rejects a non-object", () => {
@@ -68,5 +68,22 @@ describe("validateConfig", () => {
         "test.json",
       ),
     ).toThrow();
+  });
+
+  test("accepts an explicitly set valid theme", () => {
+    const config = validateConfig({ ...valid, theme: "front-page" }, "test.json");
+    expect(config.theme).toBe("front-page");
+  });
+
+  test("rejects an unknown theme id", () => {
+    expect(() => validateConfig({ ...valid, theme: "not-a-real-theme" }, "test.json")).toThrow(
+      /"theme" must be one of/,
+    );
+  });
+
+  test("rejects a non-string theme", () => {
+    expect(() => validateConfig({ ...valid, theme: 42 }, "test.json")).toThrow(
+      /"theme" must be one of/,
+    );
   });
 });

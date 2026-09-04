@@ -9,6 +9,7 @@ function config(overrides: Partial<Config> = {}): Config {
     recipientEmail: "you@example.com",
     storyCount: 3,
     schedule: { cron: "0 * * * *", timezone: "UTC" }, // hourly
+    theme: "night-wire",
     ...overrides,
   };
 }

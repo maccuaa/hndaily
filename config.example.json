@@ -4,5 +4,6 @@
   "schedule": {
     "cron": "0 7 * * *",
     "timezone": "America/Toronto"
-  }
+  },
+  "theme": "night-wire"
 }

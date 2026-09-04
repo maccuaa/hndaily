@@ -10,6 +10,7 @@ function config(): Config {
     recipientEmail: "you@example.com",
     storyCount: 3,
     schedule: { cron: "0 7 * * *", timezone: "UTC" },
+    theme: "night-wire",
   };
 }
 

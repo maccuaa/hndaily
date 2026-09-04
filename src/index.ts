@@ -14,7 +14,7 @@ const db = openDb(DB_PATH);
 
 console.log(
   `hndaily starting — schedule "${config.schedule.cron}" (${config.schedule.timezone}), ` +
-    `${config.storyCount} stories/run, sending to ${config.recipientEmail}` +
+    `${config.storyCount} stories/run, "${config.theme}" theme, sending to ${config.recipientEmail}` +
     (heartbeatUrl ? ", heartbeat enabled" : ", heartbeat disabled (HNDAILY_HEARTBEAT_URL not set)"),
 );
 

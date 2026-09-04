@@ -28,7 +28,7 @@ const MONO_FONT = `ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace`;
 const SANS_FONT = `-apple-system, BlinkMacSystemFont, sans-serif`;
 
 function renderHeader(): string {
-  return `<div style="background: ${HEADER_BG}; padding: 20px 24px;">
+	return `<div style="background: ${HEADER_BG}; padding: 20px 24px;">
     <span style="display: inline-block; width: 40px; height: 40px; background: ${MARK_BG}; border-radius: 10px; text-align: center; line-height: 40px; font-size: 18px; color: ${EMBER}; vertical-align: middle;">&#9650;</span>
     <span style="display: inline-block; vertical-align: middle; padding-left: 12px; font-family: ${MONO_FONT}; font-size: 19px; color: ${PAPER};">hndaily</span>
     <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${MINT}; vertical-align: middle; margin-left: 2px;"></span>
@@ -36,9 +36,9 @@ function renderHeader(): string {
 }
 
 function renderStoryItem(story: Story): string {
-  const link = story.url ?? hnDiscussionUrl(story.hnId);
-  const commentsUrl = hnDiscussionUrl(story.hnId);
-  return `<li style="margin-bottom: 14px;">
+	const link = story.url ?? hnDiscussionUrl(story.hnId);
+	const commentsUrl = hnDiscussionUrl(story.hnId);
+	return `<li style="margin-bottom: 14px;">
     <a href="${escapeHtml(link)}" style="font-size: 15px; text-decoration: none; color: ${EMBER_LINK}; font-weight: 600;">${escapeHtml(story.title)}</a>
     <br />
     <span style="font-size: 13px; color: ${MUTED};">${story.points} points &middot; <a href="${escapeHtml(commentsUrl)}" style="color: ${MUTED};">${story.numComments} comments</a></span>
@@ -46,22 +46,22 @@ function renderStoryItem(story: Story): string {
 }
 
 function renderFooter(): string {
-  return `<div style="padding: 14px 24px 20px; border-top: 1px solid #EEEEEE; margin-top: 4px;">
+	return `<div style="padding: 14px 24px 20px; border-top: 1px solid #EEEEEE; margin-top: 4px;">
     <span style="font-family: ${MONO_FONT}; font-size: 11px; color: ${MUTED};">hndaily — a quiet daily signal</span>
   </div>`;
 }
 
 export const nightWireTheme: Theme = {
-  id: "night-wire",
-  name: "Night Wire",
-  render({ stories, isCatchup, dateLabel }) {
-    const heading = isCatchup ? "Catch-up digest" : "Daily digest";
-    const body =
-      stories.length === 0
-        ? `<p style="font-family: ${SANS_FONT}; color: ${MUTED}; padding: 0 24px;">No new stories since the last digest.</p>`
-        : `<ol style="padding-left: 20px; margin: 16px 24px 0;">${stories.map(renderStoryItem).join("")}</ol>`;
+	id: "night-wire",
+	name: "Night Wire",
+	render({ stories, isCatchup, dateLabel }) {
+		const heading = isCatchup ? "Catch-up digest" : "Daily digest";
+		const body =
+			stories.length === 0
+				? `<p style="font-family: ${SANS_FONT}; color: ${MUTED}; padding: 0 24px;">No new stories since the last digest.</p>`
+				: `<ol style="padding-left: 20px; margin: 16px 24px 0;">${stories.map(renderStoryItem).join("")}</ol>`;
 
-    return `<!DOCTYPE html>
+		return `<!DOCTYPE html>
 <html>
   <body style="margin: 0; font-family: ${SANS_FONT}; color: #111111; background: #FFFFFF;">
     <div style="max-width: 600px; margin: 0 auto;">
@@ -73,5 +73,5 @@ export const nightWireTheme: Theme = {
     </div>
   </body>
 </html>`;
-  },
+	},
 };

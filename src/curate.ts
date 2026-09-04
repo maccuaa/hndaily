@@ -1,4 +1,5 @@
 import type { Database } from "bun:sqlite";
+
 import type { Config } from "./config";
 import { getAllSentStoryIds, getLastSuccessfulRunTime } from "./db";
 import { fetchTopStories } from "./hn-source";
@@ -19,11 +20,11 @@ const OVERFETCH_FACTOR = 4;
 const MAX_CANDIDATES = 200;
 
 export interface CurationResult {
-  stories: Story[];
-  /** True if this run is a Catch-up digest (ticket 01) covering a gap since the last successful run. */
-  isCatchup: boolean;
-  /** Unix seconds: the start of whatever window was actually used. */
-  windowStart: number;
+	stories: Story[];
+	/** True if this run is a Catch-up digest (ticket 01) covering a gap since the last successful run. */
+	isCatchup: boolean;
+	/** Unix seconds: the start of whatever window was actually used. */
+	windowStart: number;
 }
 
 /**
@@ -33,33 +34,33 @@ export interface CurationResult {
  * (ticket 09) and capped at the configured story count.
  */
 export async function curate(
-  db: Database,
-  config: Config,
-  fetchStories: typeof fetchTopStories = fetchTopStories,
+	db: Database,
+	config: Config,
+	fetchStories: typeof fetchTopStories = fetchTopStories,
 ): Promise<CurationResult> {
-  const nowMs = Date.now();
-  const nowSeconds = Math.floor(nowMs / 1000);
-  const lastSuccess = getLastSuccessfulRunTime(db);
+	const nowMs = Date.now();
+	const nowSeconds = Math.floor(nowMs / 1000);
+	const lastSuccess = getLastSuccessfulRunTime(db);
 
-  let windowStart = nowSeconds - CURATION_WINDOW_SECONDS;
-  let isCatchup = false;
+	let windowStart = nowSeconds - CURATION_WINDOW_SECONDS;
+	let isCatchup = false;
 
-  if (lastSuccess !== null) {
-    const expectedNextFire = Bun.cron.parse(config.schedule.cron, new Date(lastSuccess * 1000), {
-      tz: config.schedule.timezone,
-    });
-    if (expectedNextFire && nowMs - expectedNextFire.getTime() > CATCHUP_GRACE_MS) {
-      isCatchup = true;
-      windowStart = lastSuccess;
-    }
-  }
+	if (lastSuccess !== null) {
+		const expectedNextFire = Bun.cron.parse(config.schedule.cron, new Date(lastSuccess * 1000), {
+			tz: config.schedule.timezone,
+		});
+		if (expectedNextFire && nowMs - expectedNextFire.getTime() > CATCHUP_GRACE_MS) {
+			isCatchup = true;
+			windowStart = lastSuccess;
+		}
+	}
 
-  const overfetchLimit = Math.min(config.storyCount * OVERFETCH_FACTOR, MAX_CANDIDATES);
-  const candidates = await fetchStories(windowStart, overfetchLimit);
+	const overfetchLimit = Math.min(config.storyCount * OVERFETCH_FACTOR, MAX_CANDIDATES);
+	const candidates = await fetchStories(windowStart, overfetchLimit);
 
-  const alreadySent = getAllSentStoryIds(db);
-  const fresh = candidates.filter((story) => !alreadySent.has(story.hnId));
-  const stories = fresh.slice(0, config.storyCount);
+	const alreadySent = getAllSentStoryIds(db);
+	const fresh = candidates.filter((story) => !alreadySent.has(story.hnId));
+	const stories = fresh.slice(0, config.storyCount);
 
-  return { stories, isCatchup, windowStart };
+	return { stories, isCatchup, windowStart };
 }

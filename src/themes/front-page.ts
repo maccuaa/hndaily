@@ -19,8 +19,10 @@ const HAIRLINE = "#E4E2DC";
 const SANS_FONT = `-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif`;
 
 function renderMasthead(isCatchup: boolean): string {
-  const eyebrow = isCatchup ? "CATCH-UP — STORIES SINCE THE LAST DIGEST" : "TOP STORIES, RANKED DAILY";
-  return `<div style="padding: 20px 24px 14px;">
+	const eyebrow = isCatchup
+		? "CATCH-UP — STORIES SINCE THE LAST DIGEST"
+		: "TOP STORIES, RANKED DAILY";
+	return `<div style="padding: 20px 24px 14px;">
     <span style="display: inline-block; width: 40px; height: 40px; background: ${INK}; text-align: center; line-height: 40px; font-size: 22px; color: ${RUST}; vertical-align: middle;">&#9650;</span>
     <span style="display: inline-block; vertical-align: middle; padding-left: 12px; font-family: ${SANS_FONT}; font-weight: 800; font-size: 20px; letter-spacing: 0.03em; color: ${INK};">HN DAILY</span>
     <div style="border-top: 1px solid ${HAIRLINE}; margin: 12px 0 6px;"></div>
@@ -29,10 +31,10 @@ function renderMasthead(isCatchup: boolean): string {
 }
 
 function renderStoryItem(story: Story, rank: number): string {
-  const link = story.url ?? hnDiscussionUrl(story.hnId);
-  const commentsUrl = hnDiscussionUrl(story.hnId);
-  const rankLabel = String(rank).padStart(2, "0");
-  return `<li style="margin-bottom: 16px;">
+	const link = story.url ?? hnDiscussionUrl(story.hnId);
+	const commentsUrl = hnDiscussionUrl(story.hnId);
+	const rankLabel = String(rank).padStart(2, "0");
+	return `<li style="margin-bottom: 16px;">
     <span style="font-family: ${SANS_FONT}; font-weight: 800; color: ${RUST}; font-size: 13px;">${rankLabel}</span>
     <a href="${escapeHtml(link)}" style="font-size: 15px; text-decoration: none; color: ${INK}; font-weight: 600;">${escapeHtml(story.title)}</a>
     <br />
@@ -41,21 +43,21 @@ function renderStoryItem(story: Story, rank: number): string {
 }
 
 function renderFooter(): string {
-  return `<div style="padding: 14px 24px 20px; border-top: 1px solid ${HAIRLINE}; margin-top: 8px;">
+	return `<div style="padding: 14px 24px 20px; border-top: 1px solid ${HAIRLINE}; margin-top: 8px;">
     <span style="font-family: ${SANS_FONT}; font-size: 11px; color: ${GRAPHITE};">hndaily — a personal Hacker News digest</span>
   </div>`;
 }
 
 export const frontPageTheme: Theme = {
-  id: "front-page",
-  name: "Front Page",
-  render({ stories, isCatchup, dateLabel }) {
-    const body =
-      stories.length === 0
-        ? `<p style="font-family: ${SANS_FONT}; color: ${GRAPHITE}; padding: 0 24px;">No new stories since the last digest.</p>`
-        : `<ol style="list-style: none; padding-left: 20px; margin: 8px 24px 0;">${stories.map((story, i) => renderStoryItem(story, i + 1)).join("")}</ol>`;
+	id: "front-page",
+	name: "Front Page",
+	render({ stories, isCatchup, dateLabel }) {
+		const body =
+			stories.length === 0
+				? `<p style="font-family: ${SANS_FONT}; color: ${GRAPHITE}; padding: 0 24px;">No new stories since the last digest.</p>`
+				: `<ol style="list-style: none; padding-left: 20px; margin: 8px 24px 0;">${stories.map((story, i) => renderStoryItem(story, i + 1)).join("")}</ol>`;
 
-    return `<!DOCTYPE html>
+		return `<!DOCTYPE html>
 <html>
   <body style="margin: 0; font-family: ${SANS_FONT}; color: ${INK}; background: #FAFAF9;">
     <div style="max-width: 600px; margin: 0 auto; background: #FFFFFF;">
@@ -66,5 +68,5 @@ export const frontPageTheme: Theme = {
     </div>
   </body>
 </html>`;
-  },
+	},
 };

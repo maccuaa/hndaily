@@ -20,13 +20,13 @@ const THEMES_BY_ID: ReadonlyMap<string, Theme> = new Map(THEMES.map((theme) => [
 export const THEME_IDS: readonly string[] = THEMES.map((theme) => theme.id);
 
 export function isValidThemeId(id: string): boolean {
-  return THEMES_BY_ID.has(id);
+	return THEMES_BY_ID.has(id);
 }
 
 export function getTheme(id: string): Theme {
-  const theme = THEMES_BY_ID.get(id);
-  if (!theme) {
-    throw new Error(`Unknown theme "${id}" — must be one of: ${THEME_IDS.join(", ")}`);
-  }
-  return theme;
+	const theme = THEMES_BY_ID.get(id);
+	if (!theme) {
+		throw new Error(`Unknown theme "${id}" — must be one of: ${THEME_IDS.join(", ")}`);
+	}
+	return theme;
 }

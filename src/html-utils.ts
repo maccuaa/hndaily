@@ -5,14 +5,14 @@
  */
 
 export function escapeHtml(input: string): string {
-  return input
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+	return input
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
 }
 
 export function hnDiscussionUrl(hnId: number): string {
-  return `https://news.ycombinator.com/item?id=${hnId}`;
+	return `https://news.ycombinator.com/item?id=${hnId}`;
 }

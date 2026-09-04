@@ -7,9 +7,9 @@ import type { Story } from "../types";
  * rest of the app.
  */
 export interface ThemeRenderContext {
-  stories: Story[];
-  isCatchup: boolean;
-  dateLabel: string;
+	stories: Story[];
+	isCatchup: boolean;
+	dateLabel: string;
 }
 
 /**
@@ -19,10 +19,10 @@ export interface ThemeRenderContext {
  * src/themes/index.ts; nothing else in the codebase needs to change.
  */
 export interface Theme {
-  /** Stable identifier used in config.json's "theme" setting — kebab-case. */
-  id: string;
-  /** Human-readable name, for logs/docs only. */
-  name: string;
-  /** Renders the complete `<!DOCTYPE html>...</html>` document for a Digest email. */
-  render(context: ThemeRenderContext): string;
+	/** Stable identifier used in config.json's "theme" setting — kebab-case. */
+	id: string;
+	/** Human-readable name, for logs/docs only. */
+	name: string;
+	/** Renders the complete `<!DOCTYPE html>...</html>` document for a Digest email. */
+	render(context: ThemeRenderContext): string;
 }

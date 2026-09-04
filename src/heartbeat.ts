@@ -8,16 +8,16 @@
  * since the Digest has already been sent successfully by the time this runs.
  */
 export function loadHeartbeatUrlFromEnv(): string | null {
-  return process.env.HNDAILY_HEARTBEAT_URL || null;
+	return process.env.HNDAILY_HEARTBEAT_URL || null;
 }
 
 export async function sendHeartbeat(url: string): Promise<void> {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.error(`Heartbeat ping to ${url} returned ${res.status} ${res.statusText}`);
-    }
-  } catch (err) {
-    console.error(`Heartbeat ping to ${url} failed: ${(err as Error).message}`);
-  }
+	try {
+		const res = await fetch(url);
+		if (!res.ok) {
+			console.error(`Heartbeat ping to ${url} returned ${res.status} ${res.statusText}`);
+		}
+	} catch (err) {
+		console.error(`Heartbeat ping to ${url} failed: ${(err as Error).message}`);
+	}
 }

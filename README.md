@@ -22,10 +22,10 @@ Copy [`config.example.json`](config.example.json) to `config.json` and edit:
 
 ```json
 {
-  "recipientEmail": "you@example.com",
-  "storyCount": 25,
-  "schedule": { "cron": "0 7 * * *", "timezone": "America/Toronto" },
-  "theme": "night-wire"
+	"recipientEmail": "you@example.com",
+	"storyCount": 25,
+	"schedule": { "cron": "0 7 * * *", "timezone": "America/Toronto" },
+	"theme": "night-wire"
 }
 ```
 
@@ -54,6 +54,8 @@ bun install
 cp config.example.json config.json   # edit as needed
 bun test
 bun run typecheck
+bun run lint
+bun run fmt
 bun run start   # requires HNDAILY_SMTP_* env vars set; see .env.example
 ```
 
@@ -61,10 +63,9 @@ bun run start   # requires HNDAILY_SMTP_* env vars set; see .env.example
 
 This project is deployed as a Docker container into the Recipient's existing docker-compose stack (not its own compose file) — see [`docker-compose.snippet.yml`](docker-compose.snippet.yml) for the service entry and one-time host setup (bind-mount directory permissions, `.env` additions).
 
-Images are built for `linux/arm64` and published to `ghcr.io/maccuaa/hndaily` via [CI](.github/workflows/publish.yml) on every push to `main`. Deploys are manual:
+Images are built for `linux/arm64` and published to `ghcr.io/maccuaa/hndaily` via [CI](.github/workflows/ci.yml) on every push to `main`. Deploys are manual:
 
 ```
 docker compose pull hndaily
 docker compose up -d hndaily
 ```
-

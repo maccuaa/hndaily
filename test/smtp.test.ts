@@ -57,12 +57,10 @@ const MESSAGE = {
 	html: "<p>hi</p>",
 };
 
-/** Greeting + EHLO + AUTH LOGIN (2-step) + MAIL FROM + RCPT TO + DATA + post-DATA + QUIT = 9 responses after connect. */
+/** Greeting + EHLO + AUTH PLAIN (1-step) + MAIL FROM + RCPT TO + DATA + post-DATA + QUIT = 7 responses after connect. */
 const HAPPY_PATH_RESPONSES = [
 	"220 smtp.example.com ready\r\n",
 	"250 Hello\r\n",
-	"334 VXNlcm5hbWU6\r\n",
-	"334 UGFzc3dvcmQ6\r\n",
 	"235 Authentication successful\r\n",
 	"250 OK\r\n",
 	"250 OK\r\n",
@@ -79,8 +77,13 @@ function depsFor(socket: FakeSmtpSocket, tlsSocket: FakeSmtpSocket = socket): Sm
 	};
 }
 
+/** SASL PLAIN: `\0authcid\0passwd` (empty authzid), base64-encoded. */
+function authPlainBase64(username: string, password: string): string {
+	return Buffer.from(`\0${username}\0${password}`, "utf8").toString("base64");
+}
+
 describe("sendMail — implicit TLS (port 465)", () => {
-	test("sends the full AUTH LOGIN + envelope + DATA conversation over a single connection", async () => {
+	test("sends the full AUTH PLAIN + envelope + DATA conversation over a single connection", async () => {
 		const socket = new FakeSmtpSocket(HAPPY_PATH_RESPONSES);
 		socket.start();
 
@@ -88,15 +91,13 @@ describe("sendMail — implicit TLS (port 465)", () => {
 		await sendMail(config, MESSAGE, depsFor(socket));
 
 		expect(socket.written[0]).toBe("EHLO localhost\r\n");
-		expect(socket.written[1]).toBe("AUTH LOGIN\r\n");
-		expect(socket.written[2]).toBe(`${Buffer.from("user").toString("base64")}\r\n`);
-		expect(socket.written[3]).toBe(`${Buffer.from("pass").toString("base64")}\r\n`);
-		expect(socket.written[4]).toBe("MAIL FROM:<hndaily@example.com>\r\n");
-		expect(socket.written[5]).toBe("RCPT TO:<you@example.com>\r\n");
-		expect(socket.written[6]).toBe("DATA\r\n");
-		expect(socket.written[7]).toContain("Subject: Digest");
-		expect(socket.written[7]).toContain("\r\n\r\n<p>hi</p>\r\n.\r\n");
-		expect(socket.written[8]).toBe("QUIT\r\n");
+		expect(socket.written[1]).toBe(`AUTH PLAIN ${authPlainBase64("user", "pass")}\r\n`);
+		expect(socket.written[2]).toBe("MAIL FROM:<hndaily@example.com>\r\n");
+		expect(socket.written[3]).toBe("RCPT TO:<you@example.com>\r\n");
+		expect(socket.written[4]).toBe("DATA\r\n");
+		expect(socket.written[5]).toContain("Subject: Digest");
+		expect(socket.written[5]).toContain("\r\n\r\n<p>hi</p>\r\n.\r\n");
+		expect(socket.written[6]).toBe("QUIT\r\n");
 		expect(socket.ended).toBe(true);
 	});
 
@@ -126,7 +127,7 @@ describe("sendMail — STARTTLS (port 587)", () => {
 
 		expect(plainSocket.written).toEqual(["EHLO localhost\r\n", "STARTTLS\r\n"]);
 		expect(tlsSocket.written[0]).toBe("EHLO localhost\r\n");
-		expect(tlsSocket.written[1]).toBe("AUTH LOGIN\r\n");
+		expect(tlsSocket.written[1]).toBe(`AUTH PLAIN ${authPlainBase64("user", "pass")}\r\n`);
 		expect(tlsSocket.ended).toBe(true);
 		// The pre-upgrade socket is never explicitly .end()'d — the TLS layer owns the wire from here.
 		expect(plainSocket.ended).toBe(false);
@@ -138,8 +139,6 @@ describe("sendMail — error handling", () => {
 		const socket = new FakeSmtpSocket([
 			"220 smtp.example.com ready\r\n",
 			"250 Hello\r\n",
-			"334 VXNlcm5hbWU6\r\n",
-			"334 UGFzc3dvcmQ6\r\n",
 			"535 Authentication credentials invalid\r\n",
 		]);
 		socket.start();
@@ -153,8 +152,6 @@ describe("sendMail — error handling", () => {
 		const socket = new FakeSmtpSocket([
 			"220 smtp.example.com ready\r\n",
 			"250 Hello\r\n",
-			"334 VXNlcm5hbWU6\r\n",
-			"334 UGFzc3dvcmQ6\r\n",
 			"235 Authentication successful\r\n",
 			"250 OK\r\n",
 			"550 No such user here\r\n",
@@ -223,7 +220,7 @@ describe("sendMail — message encoding", () => {
 			depsFor(socket),
 		);
 
-		expect(socket.written[7]).toContain("Subject: HN Daily digest\r\n");
+		expect(socket.written[5]).toContain("Subject: HN Daily digest\r\n");
 	});
 
 	test("RFC 2047-encodes a subject with non-ASCII characters", async () => {
@@ -238,7 +235,7 @@ describe("sendMail — message encoding", () => {
 		);
 
 		const expectedEncoded = `=?UTF-8?B?${Buffer.from(subject, "utf8").toString("base64")}?=`;
-		expect(socket.written[7]).toContain(`Subject: ${expectedEncoded}`);
+		expect(socket.written[5]).toContain(`Subject: ${expectedEncoded}`);
 	});
 
 	test("dot-stuffs a body line that starts with a period", async () => {
@@ -251,6 +248,6 @@ describe("sendMail — message encoding", () => {
 			depsFor(socket),
 		);
 
-		expect(socket.written[7]).toContain("\r\n..this line starts with a dot\r\n");
+		expect(socket.written[5]).toContain("\r\n..this line starts with a dot\r\n");
 	});
 });

@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 /**
  * Heartbeat ping to healthchecks.io at the end of each successful Delivery
  * run (ticket 11) — catches both a crashed container (paired with Docker's
@@ -15,9 +17,13 @@ export async function sendHeartbeat(url: string): Promise<void> {
 	try {
 		const res = await fetch(url);
 		if (!res.ok) {
-			console.error(`Heartbeat ping to ${url} returned ${res.status} ${res.statusText}`);
+			logger.error("Heartbeat ping failed", {
+				url,
+				status: res.status,
+				statusText: res.statusText,
+			});
 		}
 	} catch (err) {
-		console.error(`Heartbeat ping to ${url} failed: ${(err as Error).message}`);
+		logger.error("Heartbeat ping failed", { url, error: (err as Error).message });
 	}
 }

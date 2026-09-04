@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 import type { Story } from "./types";
 
 /**
@@ -10,7 +11,9 @@ export async function fetchTopStories(sinceUnixSeconds: number, limit: number): 
 	try {
 		return await fetchFromAlgolia(sinceUnixSeconds, limit);
 	} catch (err) {
-		console.error(`Algolia HN source failed, falling back to Firebase: ${(err as Error).message}`);
+		logger.warn("Algolia HN source failed, falling back to Firebase", {
+			error: (err as Error).message,
+		});
 		return await fetchFromFirebase(sinceUnixSeconds, limit);
 	}
 }

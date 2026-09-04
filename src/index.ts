@@ -2,6 +2,7 @@ import { loadConfig } from "./config";
 import { openDb } from "./db";
 import { runDeliveryRun } from "./delivery-run";
 import { loadHeartbeatUrlFromEnv } from "./heartbeat";
+import { logger } from "./logger";
 import { loadMailerConfigFromEnv } from "./mailer";
 
 const CONFIG_PATH = process.env.HNDAILY_CONFIG_PATH ?? "config.json";
@@ -12,11 +13,14 @@ const mailerConfig = loadMailerConfigFromEnv();
 const heartbeatUrl = loadHeartbeatUrlFromEnv();
 const db = openDb(DB_PATH);
 
-console.log(
-	`hndaily starting — schedule "${config.schedule.cron}" (${config.schedule.timezone}), ` +
-		`${config.storyCount} stories/run, "${config.theme}" theme, sending to ${config.recipientEmail}` +
-		(heartbeatUrl ? ", heartbeat enabled" : ", heartbeat disabled (HNDAILY_HEARTBEAT_URL not set)"),
-);
+logger.info("hndaily starting", {
+	cron: config.schedule.cron,
+	timezone: config.schedule.timezone,
+	storyCount: config.storyCount,
+	theme: config.theme,
+	recipientEmail: config.recipientEmail,
+	heartbeatEnabled: heartbeatUrl !== null,
+});
 
 // Long-running Docker container using Bun.cron()'s in-process scheduling
 // (ticket 05/10) — config is read once at startup; changing it requires a
@@ -34,4 +38,4 @@ Bun.cron(
 );
 
 const nextFire = Bun.cron.parse(config.schedule.cron, Date.now(), { tz: config.schedule.timezone });
-console.log(`Next Delivery run scheduled for ${nextFire?.toISOString() ?? "unknown"}`);
+logger.info("Next Delivery run scheduled", { nextFire: nextFire?.toISOString() ?? "unknown" });

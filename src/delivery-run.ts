@@ -4,6 +4,7 @@ import type { Config } from "./config";
 import { curate } from "./curate";
 import { recordDeliveryRun, recordSentStories } from "./db";
 import { sendHeartbeat } from "./heartbeat";
+import { logger } from "./logger";
 import type { MailerConfig } from "./mailer";
 import { sendDigestEmail } from "./mailer";
 import { renderDigest } from "./render";
@@ -58,12 +59,12 @@ export async function runDeliveryRun(
 			await sendHeartbeatFn(deps.heartbeatUrl);
 		}
 
-		console.log(
-			`Delivery run succeeded: sent ${curationResult.stories.length} stories` +
-				(curationResult.isCatchup ? " (catch-up)" : ""),
-		);
+		logger.info("Delivery run succeeded", {
+			storiesSentCount: curationResult.stories.length,
+			isCatchup: curationResult.isCatchup,
+		});
 	} catch (err) {
-		console.error(`Delivery run failed: ${(err as Error).message}`);
+		logger.error("Delivery run failed", { error: (err as Error).message });
 		try {
 			recordDeliveryRun(deps.db, {
 				startedAt,
@@ -72,9 +73,9 @@ export async function runDeliveryRun(
 				storiesSentCount: 0,
 			});
 		} catch (recordErr) {
-			console.error(
-				`Additionally failed to record the failed run: ${(recordErr as Error).message}`,
-			);
+			logger.error("Additionally failed to record the failed run", {
+				error: (recordErr as Error).message,
+			});
 		}
 		throw err;
 	}

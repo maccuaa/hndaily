@@ -16,6 +16,8 @@ export interface DeliveryRunDeps {
 	mailerConfig: MailerConfig;
 	heartbeatUrl: string | null;
 	ntfyTopic: string | null;
+	/** A Dry run (see CONTEXT.md): sends the email and notifies as normal, but skips writing to Send history. */
+	dryRun?: boolean;
 }
 
 /** Injectable overrides for testing — default to the real implementations. */
@@ -51,13 +53,15 @@ export async function runDeliveryRun(
 		const digest = renderFn(curationResult.stories, { isCatchup: curationResult.isCatchup });
 		await sendMailFn(deps.mailerConfig, deps.config.recipientEmail, digest);
 
-		const runId = recordDeliveryRun(deps.db, {
-			startedAt,
-			status: "success",
-			isCatchup: curationResult.isCatchup,
-			storiesSentCount: curationResult.stories.length,
-		});
-		recordSentStories(deps.db, runId, curationResult.stories);
+		if (!deps.dryRun) {
+			const runId = recordDeliveryRun(deps.db, {
+				startedAt,
+				status: "success",
+				isCatchup: curationResult.isCatchup,
+				storiesSentCount: curationResult.stories.length,
+			});
+			recordSentStories(deps.db, runId, curationResult.stories);
+		}
 
 		if (deps.heartbeatUrl) {
 			await sendHeartbeatFn(deps.heartbeatUrl);
@@ -75,6 +79,7 @@ export async function runDeliveryRun(
 		logger.info("Delivery run succeeded", {
 			storiesSentCount: curationResult.stories.length,
 			isCatchup: curationResult.isCatchup,
+			dryRun: deps.dryRun ?? false,
 		});
 	} catch (err) {
 		logger.error("Delivery run failed", { error: (err as Error).message });
@@ -88,17 +93,19 @@ export async function runDeliveryRun(
 			});
 		}
 
-		try {
-			recordDeliveryRun(deps.db, {
-				startedAt,
-				status: "failure",
-				isCatchup: false,
-				storiesSentCount: 0,
-			});
-		} catch (recordErr) {
-			logger.error("Additionally failed to record the failed run", {
-				error: (recordErr as Error).message,
-			});
+		if (!deps.dryRun) {
+			try {
+				recordDeliveryRun(deps.db, {
+					startedAt,
+					status: "failure",
+					isCatchup: false,
+					storiesSentCount: 0,
+				});
+			} catch (recordErr) {
+				logger.error("Additionally failed to record the failed run", {
+					error: (recordErr as Error).message,
+				});
+			}
 		}
 		throw err;
 	}

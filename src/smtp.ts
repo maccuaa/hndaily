@@ -6,7 +6,7 @@ import { logger } from "./logger";
 /**
  * A minimal SMTP client covering exactly what hndaily needs to deliver the
  * Digest through OCI Email Delivery (ADR 0002): one recipient, an HTML-only
- * body, AUTH LOGIN, and either implicit TLS (port 465) or a STARTTLS
+ * body, AUTH PLAIN, and either implicit TLS (port 465) or a STARTTLS
  * upgrade (port 587). No attachments, no multipart, no other auth
  * mechanisms — deliberately not a general-purpose mail library.
  *
@@ -248,11 +248,18 @@ export async function sendMail(
 			});
 		}
 
-		link.writeCommand("AUTH LOGIN");
-		await expectCode(link, 334);
-		link.writeCommand(Buffer.from(config.username, "utf8").toString("base64"));
-		await expectCode(link, 334);
-		link.writeCommand(Buffer.from(config.password, "utf8").toString("base64"));
+		// AUTH PLAIN, not AUTH LOGIN: OCI Email Delivery's EHLO capabilities
+		// advertise "AUTH PLAIN OCI-RSA-SHA256" — LOGIN isn't offered at all,
+		// which is exactly what produced "SMTP error 504: The requested
+		// authentication mechanism is not supported". Confirmed empirically
+		// via the EHLO capabilities logged above, not guessed. Sent as a
+		// single initial-response line per RFC 4954, so (unlike LOGIN) this
+		// is a one round-trip exchange: SASL PLAIN is `\0authcid\0passwd`,
+		// base64-encoded, with an empty authzid.
+		const authPlain = Buffer.from(`\0${config.username}\0${config.password}`, "utf8").toString(
+			"base64",
+		);
+		link.writeCommand(`AUTH PLAIN ${authPlain}`);
 		await expectCode(link, 235);
 
 		link.writeCommand(`MAIL FROM:<${message.from}>`);

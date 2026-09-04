@@ -177,6 +177,20 @@ async function expectCode(link: SmtpLink, ...codes: number[]): Promise<string> {
 }
 
 /**
+ * Extracts the bare address from an optional "Display Name <addr>" field.
+ * The `MAIL FROM:<...>`/`RCPT TO:<...>` envelope commands (RFC 5321) want
+ * only the address — never a display name — unlike the `From:`/`To:`
+ * message headers, which accept (and want) the full "Display Name <addr>"
+ * form. `HNDAILY_FROM_ADDRESS` is commonly configured with a display name
+ * (e.g. `"HN Daily <hndaily@example.com>"`), which OCI rejects with
+ * "553 ... Invalid email address" if sent as-is in MAIL FROM.
+ */
+function extractAddress(field: string): string {
+	const match = /<([^>]+)>/.exec(field);
+	return match?.[1] ?? field;
+}
+
+/**
  * Rejects CRLF in any value that gets concatenated directly into an SMTP
  * command line or header (envelope addresses) rather than being encoded
  * first. Without this, an embedded "\r\n" could inject arbitrary SMTP
@@ -262,9 +276,9 @@ export async function sendMail(
 		link.writeCommand(`AUTH PLAIN ${authPlain}`);
 		await expectCode(link, 235);
 
-		link.writeCommand(`MAIL FROM:<${message.from}>`);
+		link.writeCommand(`MAIL FROM:<${extractAddress(message.from)}>`);
 		await expectCode(link, 250);
-		link.writeCommand(`RCPT TO:<${message.to}>`);
+		link.writeCommand(`RCPT TO:<${extractAddress(message.to)}>`);
 		await expectCode(link, 250, 251);
 		link.writeCommand("DATA");
 		await expectCode(link, 354);

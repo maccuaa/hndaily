@@ -251,3 +251,40 @@ describe("sendMail — message encoding", () => {
 		expect(socket.written[5]).toContain("\r\n..this line starts with a dot\r\n");
 	});
 });
+
+describe("sendMail — envelope address extraction", () => {
+	// Regression test: HNDAILY_FROM_ADDRESS is commonly configured with a
+	// display name (e.g. "HN Daily <hndaily@example.com>"), which is correct
+	// in the From: header but breaks MAIL FROM:<...> if sent as-is (OCI
+	// rejects it with "553 ... Invalid email address" — nested angle
+	// brackets aren't a valid envelope address).
+	test("extracts the bare address for MAIL FROM/RCPT TO, keeping the display name in headers", async () => {
+		const socket = new FakeSmtpSocket(HAPPY_PATH_RESPONSES);
+		socket.start();
+
+		await sendMail(
+			{ ...BASE_CONFIG, port: 465, secure: true },
+			{
+				...MESSAGE,
+				from: "HN Daily <hndaily@example.com>",
+				to: "Andrew <you@example.com>",
+			},
+			depsFor(socket),
+		);
+
+		expect(socket.written[2]).toBe("MAIL FROM:<hndaily@example.com>\r\n");
+		expect(socket.written[3]).toBe("RCPT TO:<you@example.com>\r\n");
+		expect(socket.written[5]).toContain("From: HN Daily <hndaily@example.com>\r\n");
+		expect(socket.written[5]).toContain("To: Andrew <you@example.com>\r\n");
+	});
+
+	test("leaves a bare address (no display name) unchanged", async () => {
+		const socket = new FakeSmtpSocket(HAPPY_PATH_RESPONSES);
+		socket.start();
+
+		await sendMail({ ...BASE_CONFIG, port: 465, secure: true }, MESSAGE, depsFor(socket));
+
+		expect(socket.written[2]).toBe(`MAIL FROM:<${MESSAGE.from}>\r\n`);
+		expect(socket.written[3]).toBe(`RCPT TO:<${MESSAGE.to}>\r\n`);
+	});
+});

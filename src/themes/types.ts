@@ -1,6 +1,24 @@
 import type { Story } from "../types";
 
 /**
+ * The Digest footer's settings line — pre-formatted, timezone-aware strings
+ * (see src/date-utils.ts) so Themes never do their own date math, matching
+ * how `dateLabel` already works.
+ */
+export interface ThemeFooterContext {
+	/** The Recipient's configured email address — shown as plain text, not a mailto: link. */
+	recipientEmail: string;
+	/** e.g. "5 September at 14:00" — when this Digest was generated. */
+	generatedAtLabel: string;
+	/** e.g. "4 September, 14:00" — start of the Curation window actually used. */
+	windowStartLabel: string;
+	/** e.g. "5 September, 14:00" — end of the Curation window (the generation moment). */
+	windowEndLabel: string;
+	/** e.g. "Sunday, 6 September at 7:00" — the next scheduled Delivery run. */
+	nextDeliveryLabel: string;
+}
+
+/**
  * Data a Theme needs to render one Digest — deliberately limited to what
  * render.ts already has available (no live schedule/heartbeat data), so
  * adding or restyling a theme never requires plumbing new state through the
@@ -10,6 +28,7 @@ export interface ThemeRenderContext {
 	stories: Story[];
 	isCatchup: boolean;
 	dateLabel: string;
+	footer: ThemeFooterContext;
 }
 
 /**

@@ -50,7 +50,13 @@ export async function runDeliveryRun(
 
 	try {
 		const curationResult = await curateFn(deps.db, deps.config);
-		const digest = renderFn(curationResult.stories, { isCatchup: curationResult.isCatchup });
+		const digest = renderFn(curationResult.stories, {
+			isCatchup: curationResult.isCatchup,
+			theme: deps.config.theme,
+			recipientEmail: deps.config.recipientEmail,
+			schedule: deps.config.schedule,
+			windowStart: curationResult.windowStart,
+		});
 		await sendMailFn(deps.mailerConfig, deps.config.recipientEmail, digest);
 
 		if (!deps.dryRun) {

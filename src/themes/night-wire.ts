@@ -1,13 +1,11 @@
-import { escapeHtml, hnDiscussionUrl } from "../html-utils";
+import { escapeHtml, extractHostname, hnDiscussionUrl } from "../html-utils";
 import type { Story } from "../types";
-import type { Theme } from "./types";
+import type { Theme, ThemeFooterContext } from "./types";
 
 /**
  * Night Wire — the default theme. A quiet background job, not a product:
- * dark, monospace-flavored header band, calm white body. This is the
- * original "plain-ish HTML" look (ticket 01) with a small identity added
- * around it, so its wording stays byte-for-byte compatible with the
- * pre-theme output (see test/theme-night-wire.test.ts).
+ * dark, monospace-flavored header band, calm white card on a soft paper
+ * background.
  *
  * The logo mark is a styled Unicode triangle (▲) rather than an inline SVG
  * or image: inline SVG/image support is inconsistent across email clients,
@@ -21,6 +19,9 @@ const EMBER_LINK = "#B8501E"; // darkened from the ember-500 brand token for con
 const MINT = "#8FBFA0";
 const PAPER = "#EDE7DD";
 const MUTED = "#8A8378";
+// Reused (not a new colour) as the background wrapped around the white card,
+// so the Digest reads as a card sitting on the page rather than edge-to-edge.
+const OUTER_BG = PAPER;
 // Single-quoted (not double-quoted) font names: these constants get interpolated
 // straight into double-quoted HTML style="..." attributes, and a literal `"`
 // would prematurely close the attribute and silently drop every style after it.
@@ -38,23 +39,25 @@ function renderHeader(): string {
 function renderStoryItem(story: Story): string {
 	const link = story.url ?? hnDiscussionUrl(story.hnId);
 	const commentsUrl = hnDiscussionUrl(story.hnId);
-	return `<li style="margin-bottom: 14px;">
+	const hostname = extractHostname(link);
+	return `<li style="margin-bottom: 22px;">
     <a href="${escapeHtml(link)}" style="font-size: 15px; text-decoration: none; color: ${EMBER_LINK}; font-weight: 600;">${escapeHtml(story.title)}</a>
     <br />
-    <span style="font-size: 13px; color: ${MUTED};">${story.points} points &middot; <a href="${escapeHtml(commentsUrl)}" style="color: ${MUTED};">${story.numComments} comments</a></span>
+    <span style="font-size: 13px; color: ${MUTED};">${escapeHtml(hostname)} &middot; ${story.points} points &middot; <a href="${escapeHtml(commentsUrl)}" style="color: ${MUTED};">${story.numComments} comments</a></span>
   </li>`;
 }
 
-function renderFooter(): string {
+function renderFooter(footer: ThemeFooterContext): string {
 	return `<div style="padding: 14px 24px 20px; border-top: 1px solid #EEEEEE; margin-top: 4px;">
-    <span style="font-family: ${MONO_FONT}; font-size: 11px; color: ${MUTED};">hndaily — a quiet daily signal</span>
+    <p style="font-family: ${MONO_FONT}; font-size: 11px; color: ${MUTED}; margin: 0 0 6px;">Sent to ${escapeHtml(footer.recipientEmail)} on ${footer.generatedAtLabel} &mdash; covers stories from ${footer.windowStartLabel} to ${footer.windowEndLabel}.</p>
+    <p style="font-family: ${MONO_FONT}; font-size: 11px; color: ${MUTED}; margin: 0;">Next digest: ${footer.nextDeliveryLabel}.</p>
   </div>`;
 }
 
 export const nightWireTheme: Theme = {
 	id: "night-wire",
 	name: "Night Wire",
-	render({ stories, isCatchup, dateLabel }) {
+	render({ stories, isCatchup, dateLabel, footer }) {
 		const heading = isCatchup ? "Catch-up digest" : "Daily digest";
 		const body =
 			stories.length === 0
@@ -63,13 +66,15 @@ export const nightWireTheme: Theme = {
 
 		return `<!DOCTYPE html>
 <html>
-  <body style="margin: 0; font-family: ${SANS_FONT}; color: #111111; background: #FFFFFF;">
-    <div style="max-width: 600px; margin: 0 auto;">
-      ${renderHeader()}
-      <h1 style="font-size: 16px; padding: 20px 24px 0; margin: 0;">${heading}</h1>
-      <p style="font-size: 12px; color: ${MUTED}; padding: 4px 24px 0; margin: 0;">${escapeHtml(dateLabel)}</p>
-      ${body}
-      ${renderFooter()}
+  <body style="margin: 0; font-family: ${SANS_FONT}; color: #111111; background: ${OUTER_BG};">
+    <div style="max-width: 600px; margin: 0 auto; padding: 24px 0;">
+      <div style="background: #FFFFFF;">
+        ${renderHeader()}
+        <h1 style="font-size: 16px; padding: 20px 24px 0; margin: 0;">${heading}</h1>
+        <p style="font-size: 12px; color: ${MUTED}; padding: 4px 24px 0; margin: 0;">${escapeHtml(dateLabel)}</p>
+        ${body}
+        ${renderFooter(footer)}
+      </div>
     </div>
   </body>
 </html>`;

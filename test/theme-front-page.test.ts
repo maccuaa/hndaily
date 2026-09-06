@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import { frontPageTheme } from "../src/themes/front-page";
+import type { ThemeFooterContext } from "../src/themes/types";
 import type { Story } from "../src/types";
 
 function story(overrides: Partial<Story> = {}): Story {
@@ -15,7 +16,20 @@ function story(overrides: Partial<Story> = {}): Story {
 	};
 }
 
-const dateLabel = "January 5, 2026";
+// front-page doesn't render footer settings (see night-wire), but every Theme
+// shares the same ThemeRenderContext shape, so this fixture is still required.
+function footer(overrides: Partial<ThemeFooterContext> = {}): ThemeFooterContext {
+	return {
+		recipientEmail: "you@example.com",
+		generatedAtLabel: "5 September at 14:00",
+		windowStartLabel: "4 September, 14:00",
+		windowEndLabel: "5 September, 14:00",
+		nextDeliveryLabel: "Sunday, 6 September at 7:00",
+		...overrides,
+	};
+}
+
+const dateLabel = "5 January";
 
 describe("frontPageTheme", () => {
 	test("has the expected id/name", () => {
@@ -24,17 +38,32 @@ describe("frontPageTheme", () => {
 	});
 
 	test("includes the masthead wordmark", () => {
-		const html = frontPageTheme.render({ stories: [story()], isCatchup: false, dateLabel });
+		const html = frontPageTheme.render({
+			stories: [story()],
+			isCatchup: false,
+			dateLabel,
+			footer: footer(),
+		});
 		expect(html).toContain("HN DAILY");
 	});
 
 	test("shows the catch-up eyebrow when isCatchup is true", () => {
-		const html = frontPageTheme.render({ stories: [story()], isCatchup: true, dateLabel });
+		const html = frontPageTheme.render({
+			stories: [story()],
+			isCatchup: true,
+			dateLabel,
+			footer: footer(),
+		});
 		expect(html).toContain("CATCH-UP");
 	});
 
 	test("shows the ranked-daily eyebrow when isCatchup is false", () => {
-		const html = frontPageTheme.render({ stories: [story()], isCatchup: false, dateLabel });
+		const html = frontPageTheme.render({
+			stories: [story()],
+			isCatchup: false,
+			dateLabel,
+			footer: footer(),
+		});
 		expect(html).not.toContain("CATCH-UP");
 		expect(html).toContain("TOP STORIES, RANKED DAILY");
 	});
@@ -44,6 +73,7 @@ describe("frontPageTheme", () => {
 			stories: [story({ hnId: 1 }), story({ hnId: 2 }), story({ hnId: 3 })],
 			isCatchup: false,
 			dateLabel,
+			footer: footer(),
 		});
 		expect(html).toContain(">01<");
 		expect(html).toContain(">02<");
@@ -55,6 +85,7 @@ describe("frontPageTheme", () => {
 			stories: [story({ url: "https://example.com/a", points: 250, numComments: 42 })],
 			isCatchup: false,
 			dateLabel,
+			footer: footer(),
 		});
 		expect(html).toContain('href="https://example.com/a"');
 		expect(html).toContain("250");
@@ -66,6 +97,7 @@ describe("frontPageTheme", () => {
 			stories: [story({ hnId: 999, url: null })],
 			isCatchup: false,
 			dateLabel,
+			footer: footer(),
 		});
 		expect(html).toContain('href="https://news.ycombinator.com/item?id=999"');
 	});
@@ -75,6 +107,7 @@ describe("frontPageTheme", () => {
 			stories: [story({ hnId: 555, url: "https://example.com/b" })],
 			isCatchup: false,
 			dateLabel,
+			footer: footer(),
 		});
 		expect(html).toContain('href="https://example.com/b"');
 		expect(html).toContain('href="https://news.ycombinator.com/item?id=555"');
@@ -85,13 +118,19 @@ describe("frontPageTheme", () => {
 			stories: [story({ title: `<script>alert("x")</script>` })],
 			isCatchup: false,
 			dateLabel,
+			footer: footer(),
 		});
 		expect(html).not.toContain("<script>alert");
 		expect(html).toContain("&lt;script&gt;");
 	});
 
 	test("shows a friendly message when there are no stories", () => {
-		const html = frontPageTheme.render({ stories: [], isCatchup: false, dateLabel });
+		const html = frontPageTheme.render({
+			stories: [],
+			isCatchup: false,
+			dateLabel,
+			footer: footer(),
+		});
 		expect(html).toContain("No new stories");
 	});
 });

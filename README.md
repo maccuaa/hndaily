@@ -6,7 +6,7 @@ Fetches top HN stories (title, link, points, comment count) and emails a Digest 
 
 ## How it works
 
-A single long-running process (`src/index.ts`) registers a [`Bun.cron()`](https://bun.sh/docs/runtime/cron) schedule. On each fire it:
+A single long-running process (`src/index.ts`) registers a [`Bun.cron()`](https://bun.sh/docs/runtime/cron) schedule, re-reading `config.json` on every fire (see [Configuration](#configuration)). On each fire it:
 
 1. **Curates** — fetches candidate Stories (Algolia HN Search API, falling back to the official Firebase API), filters out anything already sent, caps at the configured story count.
 2. **Renders** — builds a plain-ish HTML email.
@@ -41,7 +41,7 @@ Copy [`config.example.json`](config.example.json) to `config.json` and edit:
   registering it in [`src/themes/index.ts`](src/themes/index.ts) — nothing
   else needs to change.
 
-Changing this file requires restarting the process/container to take effect (it's read once at startup).
+Config is re-read before every scheduled run, so editing this file takes effect without restarting the process/container. A schedule change (`schedule.cron`/`schedule.timezone`) takes effect starting the *next* fire of the old schedule, not instantly. `--run-once`/`--dry-run` always read the file fresh.
 
 ## Environment variables
 

@@ -7,7 +7,6 @@ import { sendHeartbeat } from "./heartbeat";
 import { logger } from "./logger";
 import type { MailerConfig } from "./mailer";
 import { sendDigestEmail } from "./mailer";
-import { sendNtfyNotification } from "./ntfy";
 import { renderDigest } from "./render";
 
 export interface DeliveryRunDeps {
@@ -15,8 +14,7 @@ export interface DeliveryRunDeps {
 	config: Config;
 	mailerConfig: MailerConfig;
 	heartbeatUrl: string | null;
-	ntfyTopic: string | null;
-	/** A Dry run (see CONTEXT.md): sends the email and notifies as normal, but skips writing to Send history. */
+	/** A Dry run (see CONTEXT.md): sends the email as normal, but skips writing to Send history. */
 	dryRun?: boolean;
 }
 
@@ -26,12 +24,11 @@ export interface DeliveryRunOverrides {
 	renderFn?: typeof renderDigest;
 	sendMailFn?: typeof sendDigestEmail;
 	sendHeartbeatFn?: typeof sendHeartbeat;
-	sendNtfyFn?: typeof sendNtfyNotification;
 }
 
 /**
  * Orchestrates one Delivery run (ticket 09): curate → render → send →
- * record → heartbeat/notify. On failure, records a failed run (best-effort)
+ * record → heartbeat. On failure, records a failed run (best-effort)
  * and re-throws so the process exits — Docker's `restart: unless-stopped`
  * (ticket 10) is the recovery mechanism, alongside the heartbeat ping
  * (ticket 11) catching a schedule that silently stopped firing.
@@ -44,7 +41,6 @@ export async function runDeliveryRun(
 	const renderFn = overrides.renderFn ?? renderDigest;
 	const sendMailFn = overrides.sendMailFn ?? sendDigestEmail;
 	const sendHeartbeatFn = overrides.sendHeartbeatFn ?? sendHeartbeat;
-	const sendNtfyFn = overrides.sendNtfyFn ?? sendNtfyNotification;
 
 	const startedAt = Math.floor(Date.now() / 1000);
 
@@ -72,15 +68,6 @@ export async function runDeliveryRun(
 		if (deps.heartbeatUrl) {
 			await sendHeartbeatFn(deps.heartbeatUrl);
 		}
-		if (deps.ntfyTopic) {
-			await sendNtfyFn(deps.ntfyTopic, {
-				title: "hndaily",
-				message:
-					`Sent ${curationResult.stories.length} stories` +
-					(curationResult.isCatchup ? " (catch-up)" : ""),
-				tags: ["white_check_mark"],
-			});
-		}
 
 		logger.info("Delivery run succeeded", {
 			storiesSentCount: curationResult.stories.length,
@@ -89,15 +76,6 @@ export async function runDeliveryRun(
 		});
 	} catch (err) {
 		logger.error("Delivery run failed", { error: (err as Error).message });
-
-		if (deps.ntfyTopic) {
-			await sendNtfyFn(deps.ntfyTopic, {
-				title: "hndaily failed",
-				message: (err as Error).message,
-				priority: "high",
-				tags: ["rotating_light"],
-			});
-		}
 
 		if (!deps.dryRun) {
 			try {

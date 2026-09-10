@@ -4,7 +4,6 @@ import { runDeliveryRun } from "./delivery-run";
 import { loadHeartbeatUrlFromEnv } from "./heartbeat";
 import { logger } from "./logger";
 import { loadMailerConfigFromEnv } from "./mailer";
-import { loadNtfyTopicFromEnv } from "./ntfy";
 
 const CONFIG_PATH = process.env.HNDAILY_CONFIG_PATH ?? "config.json";
 const DB_PATH = process.env.HNDAILY_DB_PATH ?? "data/hndaily.sqlite";
@@ -22,7 +21,6 @@ if (runOnce && dryRun) {
 let config = await loadConfig(CONFIG_PATH);
 const mailerConfig = loadMailerConfigFromEnv();
 const heartbeatUrl = loadHeartbeatUrlFromEnv();
-const ntfyTopic = loadNtfyTopicFromEnv();
 const db = openDb(DB_PATH);
 
 logger.info("hndaily starting", {
@@ -32,12 +30,11 @@ logger.info("hndaily starting", {
 	theme: config.theme,
 	recipientEmail: config.recipientEmail,
 	heartbeatEnabled: heartbeatUrl !== null,
-	ntfyEnabled: ntfyTopic !== null,
 	mode: runOnce ? "run-once" : dryRun ? "dry-run" : "scheduled",
 });
 
 if (runOnce || dryRun) {
-	await runDeliveryRun({ db, config, mailerConfig, heartbeatUrl, ntfyTopic, dryRun });
+	await runDeliveryRun({ db, config, mailerConfig, heartbeatUrl, dryRun });
 	process.exit(0);
 }
 
@@ -99,7 +96,7 @@ async function tick(): Promise<void> {
 	// which crashes the process. Docker's `restart: unless-stopped` (ticket
 	// 10) is the recovery mechanism, alongside the heartbeat ping (ticket 11)
 	// catching a schedule that silently stopped firing.
-	await runDeliveryRun({ db, config, mailerConfig, heartbeatUrl, ntfyTopic });
+	await runDeliveryRun({ db, config, mailerConfig, heartbeatUrl });
 
 	// Re-read once more in case config.json was edited again while the
 	// delivery above (SMTP/network calls) was in flight.

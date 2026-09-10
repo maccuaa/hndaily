@@ -4,8 +4,8 @@ import { DEFAULT_THEME_ID, THEME_IDS } from "./themes";
  * Loads and validates the Recipient's config file (ticket 01): story count,
  * schedule (a standard cron expression covers frequency + time-of-day
  * together), IANA timezone, and which Theme (src/themes/) renders the
- * Digest's HTML. Read once at container startup (ticket 10); changing a
- * value requires restarting the container to take effect.
+ * Digest's HTML. Re-read before every scheduled Delivery run (see
+ * src/index.ts) — editing the file takes effect without a restart.
  */
 export interface Config {
 	recipientEmail: string;

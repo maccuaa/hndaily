@@ -33,7 +33,7 @@ One execution of the pipeline: fetch candidate Stories, apply the Curation windo
 _Avoid_: Job, cron run, build (reserve for the scheduling mechanism itself)
 
 **Dry run**:
-A manually-triggered run (`--dry-run`) through the full pipeline — curate, render, send, notify — used to verify delivery mechanics without waiting for the schedule. Still sends a real Digest and real Notifications; the only difference from a Delivery run is that it never updates Send history, so it has no effect on which Stories count as already sent.
+A manually-triggered run (`--dry-run`) through the full pipeline — curate, render, send — used to verify delivery mechanics without waiting for the schedule. Still sends a real Digest; the only difference from a Delivery run is that it never updates Send history, so it has no effect on which Stories count as already sent.
 _Avoid_: Test run, preview (both imply no real send happens — it does)
 
 **Theme**:
@@ -42,8 +42,4 @@ _Avoid_: Template, skin (this codebase's term is "Theme")
 
 **Heartbeat**:
 A liveness-only ping to healthchecks.io at the end of a successful Delivery run — no content, alerts only when pings *stop* arriving (a dead man's switch), not on any specific outcome.
-_Avoid_: Notification, alert (those carry content — see Notification)
-
-**Notification**:
-A content-bearing message sent via ntfy reporting a specific Delivery run's outcome — success or failure — as it happens. A short-term addition alongside the Heartbeat, until the Heartbeat alone proves reliable.
-_Avoid_: Heartbeat (that's liveness-only, with no content)
+_Avoid_: Notification, alert (those imply content-bearing messages this ping doesn't carry)

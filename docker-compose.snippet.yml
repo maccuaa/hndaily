@@ -1,13 +1,5 @@
 # hndaily docker-compose service entry
 #
-# This project doesn't manage its own docker-compose.yml — per ticket 07,
-# it's added as a service to the Recipient's existing shared
-# docker-compose.yml, following the same conventions already used there:
-#   - one shared root .env file, each secret referenced explicitly below
-#     via ${VAR} (not env_file:, and the .env file is never mounted)
-#   - a bind mount for data that needs to be persisted and backed up
-#
-# Copy the service block below into the existing docker-compose.yml.
 #
 # One-time setup before first `docker compose up`:
 #   1. Create the bind-mount directory and make it writable by the
@@ -28,8 +20,8 @@
 #        HNDAILY_FROM_ADDRESS=<your OCI Email Delivery Approved Sender address>
 #        HNDAILY_HEARTBEAT_URL=<your healthchecks.io check ping URL>
 #        HNDAILY_NTFY_TOPIC=<your ntfy.sh topic name, optional>
-#   4. Build and push the image via CI (see .github/workflows/ci.yml),
-#      then `docker compose pull hndaily && docker compose up -d hndaily`.
+#   4. Pull and start the hndaily service:
+#      `docker compose pull hndaily && docker compose up -d hndaily`.
 
 services:
   hndaily:

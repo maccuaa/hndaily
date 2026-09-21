@@ -37,7 +37,7 @@ A manually-triggered run (`--dry-run`) through the full pipeline — curate, ren
 _Avoid_: Test run, preview (both imply no real send happens — it does)
 
 **Theme**:
-The Digest's visual identity — header/logo, story-row layout, and footer (`src/themes/`), selected by the `theme` config setting. Two ship today: `night-wire` (default, quiet/dark) and `front-page` (bold, HN-style masthead with ranked stories). Purely presentational — never changes which Stories are selected or the Curation window.
+The Digest's visual identity — header/logo, story-row layout, and footer (`src/themes/`), selected by the `theme` config setting. Four ship today: `night-wire` (default, quiet/dark), `front-page` (bold, HN-style masthead with ranked stories), `morning-herald` (sepia broadsheet), and `crimson-column` (clean digital-editorial). Purely presentational — never changes which Stories are selected or the Curation window.
 _Avoid_: Template, skin (this codebase's term is "Theme")
 
 **Heartbeat**:

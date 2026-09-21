@@ -35,6 +35,8 @@ Copy [`config.example.json`](config.example.json) to `config.json` and edit:
 - `theme` — which visual identity renders the Digest's HTML. One of:
   - `"night-wire"` (default) — dark, monospace-flavored header on an otherwise plain white Digest.
   - `"front-page"` — a bold Hacker News-style masthead with stories numbered by rank.
+  - `"morning-herald"` — a sepia-toned broadsheet with serif headlines and byline-style metadata.
+  - `"crimson-column"` — a clean digital-editorial look: crisp white background, bold serif headlines, a single crimson accent.
 
   Omit it to get `"night-wire"`. Adding a new theme means implementing the
   `Theme` interface in a new file under [`src/themes/`](src/themes/) and

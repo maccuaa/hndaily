@@ -1,4 +1,6 @@
+import { crimsonColumnTheme } from "./crimson-column";
 import { frontPageTheme } from "./front-page";
+import { morningHeraldTheme } from "./morning-herald";
 import { nightWireTheme } from "./night-wire";
 import type { Theme } from "./types";
 
@@ -9,7 +11,12 @@ export type { Theme, ThemeRenderContext } from "./types";
  * to night-wire.ts/front-page.ts, then add it to this list — nothing else
  * in the codebase (render.ts, config.ts) needs to change.
  */
-const THEMES: readonly Theme[] = [nightWireTheme, frontPageTheme];
+const THEMES: readonly Theme[] = [
+	nightWireTheme,
+	frontPageTheme,
+	morningHeraldTheme,
+	crimsonColumnTheme,
+];
 
 /** Config.theme falls back to this when a config.json predates the theme setting. */
 export const DEFAULT_THEME_ID: string = nightWireTheme.id;

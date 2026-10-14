@@ -31,6 +31,7 @@ logger.info("hndaily starting", {
 	recipientEmail: config.recipientEmail,
 	heartbeatEnabled: heartbeatUrl !== null,
 	mode: runOnce ? "run-once" : dryRun ? "dry-run" : "scheduled",
+	bunVersion: Bun.version,
 });
 
 if (runOnce || dryRun) {

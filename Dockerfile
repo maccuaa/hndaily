@@ -1,5 +1,5 @@
 # See https://bun.sh/guides/ecosystem/docker for the base pattern.
-FROM oven/bun:1@sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598 AS base
+FROM oven/bun:1.4.3@sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598 AS base
 WORKDIR /usr/src/app
 
 # Install dependencies into a temp directory first — cached separately from

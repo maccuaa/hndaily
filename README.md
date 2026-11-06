@@ -71,3 +71,5 @@ Images are built for `linux/arm64` and published to `ghcr.io/maccuaa/hndaily` vi
 docker compose pull hndaily
 docker compose up -d hndaily
 ```
+
+The runtime image is the official distroless variant of `oven/bun` (no shell or package manager), so `docker compose exec hndaily sh` won't work; use `docker compose exec hndaily /usr/local/bin/bun -e "..."` for one-off commands. `--run-once`/`--dry-run` still reach the app as container args, e.g. `docker compose run --rm hndaily --dry-run`. The container runs as uid/gid 1000 by default; a compose `user:` with any numeric uid works too, as long as that uid can write the bind-mounted `/data`.

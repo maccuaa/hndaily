@@ -3,8 +3,9 @@
 #
 # One-time setup before first `docker compose up`:
 #   1. Create the bind-mount directory and make it writable by the
-#      container's non-root user (uid/gid 1000, "bun" in the oven/bun
-#      image):
+#      container's non-root user (uid/gid 1000 by default; the distroless
+#      image has no named users, so a `user:` override must be numeric and
+#      the directory chowned to match):
 #        mkdir -p ./data/hndaily
 #        docker run --rm -v "$(pwd)/data/hndaily:/data" --user root \
 #          oven/bun:1 chown -R 1000:1000 /data

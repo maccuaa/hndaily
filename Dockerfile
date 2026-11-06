@@ -25,6 +25,8 @@ COPY package.json .
 COPY --from=data-dir --chown=1000:1000 /data /data
 
 ENV NODE_ENV=production
+# Bun only colors logs on a TTY, and `docker compose logs` is a pipe, so force it (FORCE_COLOR=0 disables).
+ENV FORCE_COLOR=1
 USER 1000:1000
 # The whole command lives in ENTRYPOINT (replacing the base image's `bun` one)
 # so `--run-once`/`--dry-run` still work as container args.

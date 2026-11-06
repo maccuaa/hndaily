@@ -73,3 +73,17 @@ docker compose up -d hndaily
 ```
 
 The runtime image is the official distroless variant of `oven/bun` (no shell or package manager), so `docker compose exec hndaily sh` won't work; use `docker compose exec hndaily /usr/local/bin/bun -e "..."` for one-off commands. `--run-once`/`--dry-run` still reach the app as container args, e.g. `docker compose run --rm hndaily --dry-run`. The container runs as uid/gid 1000 by default; a compose `user:` with any numeric uid works too, as long as that uid can write the bind-mounted `/data`.
+
+## Logs
+
+One line per event, the same in every environment. Read them with `docker compose logs -f hndaily`:
+
+```
+2026-11-06 12:00:09 INFO  Delivery run succeeded storiesSentCount=25 isCatchup=false dryRun=false
+2026-11-06 12:00:11 ERROR Delivery run failed error="SMTP error 504: The requested authentication mechanism is not supported"
+```
+
+- Fields are `key=value`. A value containing whitespace, a quote or a control character is JSON-quoted, so an event never spans lines.
+- Info goes to stdout, warn and error to stderr.
+- Color (red `ERROR`, yellow `WARN`, dim timestamp) is on because the image sets `FORCE_COLOR=1`; Bun otherwise colors only a TTY, and `docker compose logs` is a pipe. Set `FORCE_COLOR=0` to turn it off (`NO_COLOR` alone doesn't override it).
+- Timestamps are the container's local time, which is UTC unless `TZ` is set (e.g. `TZ=America/Toronto`). `schedule.timezone` doesn't affect them.

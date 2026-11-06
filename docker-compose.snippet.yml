@@ -35,6 +35,12 @@ services:
       - HNDAILY_HEARTBEAT_URL=${HNDAILY_HEARTBEAT_URL}
       - HNDAILY_DB_PATH=/data/hndaily.sqlite
       - HNDAILY_CONFIG_PATH=/config/hndaily.json
+      # Optional. Log timestamps use the container's local time, which is UTC
+      # unless TZ is set. schedule.timezone in config.json is unaffected.
+      # - TZ=America/Toronto
+      # Optional. The image colors logs (FORCE_COLOR=1) so `docker compose logs`
+      # is easier to scan; set this to 0 to turn color off.
+      # - FORCE_COLOR=0
     volumes:
       - ./data/hndaily:/data
       - ./config:/config:ro
